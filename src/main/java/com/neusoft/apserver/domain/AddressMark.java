@@ -3,6 +3,7 @@ package com.neusoft.apserver.domain;
 import lombok.Data;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Id;
 import javax.persistence.Table;
 /**
  * address映射实体类
@@ -27,12 +28,13 @@ public class AddressMark {
     //申请人所在国
     private String  appCountry;
     //申请人地址APP_ADDRESS
-    @Column(name="appAddress")
+    @Column(name="app_address")
     private String address;
     //申请人所在邮编APP_ZIP
-    @Column(name="appZip")
+    @Column(name="app_zip")
     private String zip;
     //用作标词id
+    @Id
     @Column(name ="qid")
     private String id;
     //省
@@ -49,5 +51,8 @@ public class AddressMark {
     private String markUser;
     //标记时间
     private String markTime;
+    //状态
+    private Integer status;
+
 
 }
