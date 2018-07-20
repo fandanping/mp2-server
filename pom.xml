@@ -4,11 +4,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.neusoft</groupId>
-	<artifactId>ap-server</artifactId>
+	<artifactId>mp2-server</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>ap-server</name>
+	<name>mp2-server</name>
 	<description>ap-server  project for Spring Boot</description>
 
 	<parent>
