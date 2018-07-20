@@ -3,9 +3,7 @@ package com.neusoft.apserver.domain;
 import lombok.Data;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.Table;
-
 /**
  * address映射实体类
  * @name fandp
@@ -29,9 +27,11 @@ public class AddressMark {
     //申请人所在国
     private String  appCountry;
     //申请人地址APP_ADDRESS
-    private String appAddress;
+    @Column(name="appAddress")
+    private String address;
     //申请人所在邮编APP_ZIP
-    private String appZip;
+    @Column(name="appZip")
+    private String zip;
     //用作标词id
     @Column(name ="qid")
     private String id;

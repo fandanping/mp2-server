@@ -5,7 +5,7 @@ import com.neusoft.apserver.common.domain.Pagination;
 import com.neusoft.apserver.common.domain.Record;
 import com.neusoft.apserver.common.domain.TrsResult;
 import com.neusoft.apserver.common.engine.TrsEngine;
-import com.neusoft.apserver.dao.IpcMarkRerpository;
+import com.neusoft.apserver.dao.IpcMarkRepository;
 import com.neusoft.apserver.domain.Constant;
 import com.neusoft.apserver.service.IpcSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,7 @@ public class IpcSearchServiceImpl implements IpcSearchService {
     @Autowired
     private TrsEngine trsEngine;
     @Autowired
-    private IpcMarkRerpository markRerpository;
+    private IpcMarkRepository markRerpository;
     @Override
     public Map<String, Object> searchPatentList(String ipc, Pagination pagination) {
         Map<String, Object> map = new HashMap<String, Object>();

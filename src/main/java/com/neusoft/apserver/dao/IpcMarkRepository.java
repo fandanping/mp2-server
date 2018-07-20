@@ -17,7 +17,7 @@ import java.util.List;
  * @name fandp
  * @email fandp@neusoft.com
  */
-public interface IpcMarkRerpository extends JpaRepository<IpcMark,String> {
+public interface IpcMarkRepository extends JpaRepository<IpcMark,String> {
 
     public List<IpcMark> findByAn(String an);
 

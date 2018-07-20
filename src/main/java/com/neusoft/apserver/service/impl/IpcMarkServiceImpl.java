@@ -2,7 +2,7 @@ package com.neusoft.apserver.service.impl;
 
 
 import com.neusoft.apserver.common.util.IDGenerator;
-import com.neusoft.apserver.dao.IpcMarkRerpository;
+import com.neusoft.apserver.dao.IpcMarkRepository;
 import com.neusoft.apserver.domain.IpcMark;
 import com.neusoft.apserver.service.IpcMarkService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,7 @@ import java.util.List;
 @Service
 public class IpcMarkServiceImpl implements IpcMarkService {
     @Autowired
-    private IpcMarkRerpository markRerpository;
+    private IpcMarkRepository markRerpository;
 
     //保存标引词方法
     @Override
