@@ -27,20 +27,26 @@ public class IpcMarkController {
 
     //保存标引词
     @PostMapping("/add")
-    public  boolean addMark(@RequestBody Map postMap, HttpServletRequest request){
+    public  Map<String ,Object> addMark(@RequestBody Map postMap, HttpServletRequest request){
         Gson gson = new Gson();
         String markStr = (String) postMap.get("markList");
         ArrayList<IpcMark> markList = gson.fromJson(markStr, new TypeToken<List<IpcMark>>(){}.getType());
         String userId = (String) request.getAttribute(Constant.USER_ID);
-        return markService.addMark(userId,markList);
+        boolean flag=markService.addMark(userId,markList);
+        Map<String ,Object> map=new HashMap<String,Object>();
+        map.put("flag",flag);
+        return map;
     }
 
     //删除标引词
     @PostMapping("/delete")
-    public boolean  deleteMark(@RequestBody Map postMap,HttpServletRequest request){
+    public Map<String,Object>  deleteMark(@RequestBody Map postMap,HttpServletRequest request){
         String markId = (String) postMap.get("markId");
         String userId = (String) request.getAttribute(Constant.USER_ID);
-          return markService.deleteMark(markId,userId);
+        boolean flag= markService.deleteMark(markId,userId);
+        Map<String ,Object> map=new HashMap<String,Object>();
+        map.put("flag",flag);
+        return map;
     }
 
     //查询显示标引词

@@ -1,8 +1,6 @@
 package com.neusoft.apserver.service;
 
 import com.neusoft.apserver.domain.AddressMark;
-import com.neusoft.apserver.domain.IpcMark;
-
 import java.util.List;
 
 /**
@@ -14,5 +12,8 @@ import java.util.List;
 public interface AddressSearchService {
     //查询正在标引列表
     public List<AddressMark> showMarkingList(String userId);
-
+    //查询未标引地址列表
+    public List<AddressMark> showUnMarkList(String userId,String keyword);
+    //保存标引词
+    public boolean addMark(String userId, List<AddressMark> markList);
 }
