@@ -15,12 +15,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *  标引模块
+ *  ipc:标引模块
  * @name fandp
  * @email fandp@neusoft.com
  */
 @RestController
-@RequestMapping("/mark")
+@RequestMapping("/ipc")
 public class IpcMarkController {
     @Autowired
     private IpcMarkService markService;

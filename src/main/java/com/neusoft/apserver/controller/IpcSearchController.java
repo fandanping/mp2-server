@@ -11,26 +11,26 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 查询ic下案卷模块
+ * ipc:查询ic下案卷模块
  *
  * @name fandp
  * @email fandp@neusoft.com
  */
 @RestController
-@RequestMapping("/search")
+@RequestMapping("/ipc")
 public class IpcSearchController {
     @Autowired
     private IpcSearchService searchService;
 
     //查询案卷列表
-    @GetMapping("/patent/list/{ipc}")
+    @GetMapping("/search/list/{ipc}")
     public Map<String, Object> searchPatentList(@PathVariable String ipc, Pagination pagination, String token) {
         Map<String, Object> patentMap = searchService.searchPatentList(ipc.replaceAll("-", "/"), pagination);
         return patentMap;
     }
 
     //查询中英文解释
-    @GetMapping("/ipc/{ipc}")
+    @GetMapping("/search/{ipc}")
     public Map<String, Map<String, String>> searchIpc(@PathVariable String ipc, String token) {
         Map<String, String> ipcResult = searchService.searchIpc(ipc.replaceAll("-", "/"));
         Map<String, Map<String, String>> result = new HashMap<String, Map<String, String>>();
