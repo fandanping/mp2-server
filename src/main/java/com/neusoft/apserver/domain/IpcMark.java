@@ -13,7 +13,7 @@ import javax.persistence.Table;
  */
 @Data
 @Entity
-@Table(name="MP_MARK")
+@Table(name="SIPO_MP_IPC_MARK")
 public class IpcMark {
     //id
     @Id

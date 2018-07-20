@@ -1,6 +1,7 @@
 package com.neusoft.apserver.domain;
 
 import lombok.Data;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -12,11 +13,11 @@ import javax.persistence.Table;
  */
 @Data
 @Entity
-@Table(name = "SIPO_AP_ADDRESS")
+@Table(name = "SIPO_AP_ADDRESS_TEST")
 public class AddressMark {
-    //主键id
-    @Id
-    private Integer id;
+    //ID
+    @Column(name ="id")
+    private Integer numberId;
     //案卷号an
     private String an;
     //发明类别
@@ -32,7 +33,8 @@ public class AddressMark {
     //申请人所在邮编APP_ZIP
     private String appZip;
     //用作标词id
-    private String qid;
+    @Column(name ="qid")
+    private String id;
     //省
     private String provice;
     //市

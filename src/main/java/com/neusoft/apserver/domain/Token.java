@@ -11,7 +11,7 @@ import javax.persistence.Table;
  */
 @Data
 @Entity
-@Table(name = "MP_TOKEN")
+@Table(name = "SIPO_MP_TOKEN")
 public class Token {
     //id
     @Id
