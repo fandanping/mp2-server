@@ -29,7 +29,7 @@ public class AddressSearchController {
     private AddressSearchService addressSearchService;
 
     /**
-     * 查询正在标引的地址列表：controller层
+     * 登录后初次进首页，查询正在标引的地址列表，如果没有正在标引的，则随机20篇：controller层
      * @param request
      * @return
      */
@@ -42,7 +42,7 @@ public class AddressSearchController {
     }
 
     /**
-     * 点击随标按钮，随机20篇出来
+     * 点击随标按钮，随机20篇出来，也可通过关键词模糊匹配
      * @param keyword
      * @param request
      * @return
@@ -55,13 +55,17 @@ public class AddressSearchController {
         return result;
     }
 
+    /**
+     * 保存词
+     * @param postMap
+     * @param request
+     * @return
+     */
     @PostMapping("/save")
     public Map<String ,Object> addAddress(@RequestBody Map postMap, HttpServletRequest request){
         Gson gson = new Gson();
         String markStr = (String) postMap.get("markAddressList");
-        System.out.println(markStr);
         List<AddressMarkForm> markList = gson.fromJson(markStr, new TypeToken<List<AddressMarkForm>>(){}.getType());
-
         String userId = (String) request.getAttribute(Constant.USER_ID);
         boolean flag=addressSearchService.addMark(userId,markList);
         Map<String ,Object> map=new HashMap<String,Object>();

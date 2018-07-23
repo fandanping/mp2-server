@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 /**
- * 地址模块数据库操作层
+ * 地址模块数据库操作层--地址表
  */
 public interface AddressRepository extends JpaRepository<AddressMark,String>{
     //查询之前未标记的地址
