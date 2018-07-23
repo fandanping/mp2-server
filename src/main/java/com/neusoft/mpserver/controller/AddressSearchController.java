@@ -3,6 +3,7 @@ package com.neusoft.mpserver.controller;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.neusoft.mpserver.domain.AddressMark;
+import com.neusoft.mpserver.domain.AddressMarkForm;
 import com.neusoft.mpserver.domain.Constant;
 import com.neusoft.mpserver.service.AddressSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,11 +58,9 @@ public class AddressSearchController {
     @PostMapping("/save")
     public Map<String ,Object> addAddress(@RequestBody Map postMap, HttpServletRequest request){
         Gson gson = new Gson();
-        //[{id=33, marked=1, province=aa, city=aa, area=, town=as, status=1}]
-        //[{"type":2,"word":"张长峰","userId":"DA647245B897401E99D8BEE7C9111EB2","ipc":"A61K36/28","an":"CN201711297848"}]
         String markStr = (String) postMap.get("markAddressList");
         System.out.println(markStr);
-        List<AddressMark> markList = gson.fromJson(markStr, new TypeToken<List<AddressMark>>(){}.getType());
+        List<AddressMarkForm> markList = gson.fromJson(markStr, new TypeToken<List<AddressMarkForm>>(){}.getType());
 
         String userId = (String) request.getAttribute(Constant.USER_ID);
         boolean flag=addressSearchService.addMark(userId,markList);

@@ -1,6 +1,7 @@
 package com.neusoft.mpserver.dao;
 
 import com.neusoft.mpserver.domain.AddressMark;
+import com.neusoft.mpserver.domain.AddressMarkForm;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -35,13 +36,4 @@ public interface AddressRepository extends JpaRepository<AddressMark,String>{
     @Query("update AddressMark  set markUser=?2, marked='2'  where id in (?1)")
     public  int updateMarkUser(List<String> id,String userId);
 
-    //批量保存地址词
-    @Modifying
-    @Query("update AddressMark   set provice=?3,city=?4,area=?5,town=?6,status=?7, marked='1'  where id=?1")
-    public  int saveMark(List<AddressMark> markList);
-
-    //点击保存词，将没有标记的地址退回数据库
-    @Modifying
-    @Query("update AddressMark   set mark_user='', marked=''  where id=?1 and  marked='2'")
-    public  int updateMarkStatusById(List<String> id);
 }

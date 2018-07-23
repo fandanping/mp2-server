@@ -1,10 +1,11 @@
 package com.neusoft.mpserver.service.impl;
+import com.neusoft.mpserver.dao.AddressFormRepository;
 import com.neusoft.mpserver.dao.AddressRepository;
 import com.neusoft.mpserver.domain.AddressMark;
+import com.neusoft.mpserver.domain.AddressMarkForm;
 import com.neusoft.mpserver.service.AddressSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
@@ -22,8 +23,10 @@ import java.util.*;
 public class AddressSearchServiceImpl  implements AddressSearchService{
     @Autowired
     private AddressRepository addressRepository;
-    @PersistenceContext
-    private EntityManager em;
+    //@PersistenceContext
+    //private EntityManager em;
+    @Autowired
+    private AddressFormRepository addressFormRepository;
 
     /**
      * 查询正在标引的地址,若没有正在标引的词，随机查询20篇
@@ -43,9 +46,7 @@ public class AddressSearchServiceImpl  implements AddressSearchService{
         }else{
             return addressMarkingList;
         }
-
     }
-
     /**
      * 转换器
      * @param addressMark
@@ -66,11 +67,10 @@ public class AddressSearchServiceImpl  implements AddressSearchService{
         }
         map.put("addressMarkList",addressMarkList);
         map.put("idList",idList);
-        System.out.print("aaaaaaaaaaaaaa"+map);
         return map;
     }
     /**
-     * 随机top20篇，可以模糊查询前20篇
+     * 随机top20篇，也可以模糊查询前20篇
      * @param keyword
      * @param userId
      * @return
@@ -106,33 +106,33 @@ public class AddressSearchServiceImpl  implements AddressSearchService{
      */
     @Transactional
     @Override
-    public boolean addMark(String userId, List<AddressMark> markList) {
-        List<AddressMark> markListResult=new ArrayList<AddressMark>();
+    public boolean addMark(String userId, List<AddressMarkForm> markList) {
+        List<AddressMarkForm> markListResult=new ArrayList<AddressMarkForm>();
         List<String> idList=new ArrayList<String>();
         for(int i=0;i<markList.size();i++){
-            System.out.println(markList.get(i).getMarked());
-            if(markList.get(i).getMarked().equals("1")){
+            AddressMarkForm addressMark=markList.get(i);
+            if(addressMark.getMarked().equals("1")){
                 Date day = new Date();
                 SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                markList.get(i).setMarkTime(df.format(day));
-                markListResult.add(markList.get(i));
+                addressMark.setMarkTime(df.format(day));
+                markListResult.add(addressMark);
             }else{
-                String id=markListResult.get(i).getId();
+                String id=addressMark.getId();
                 idList.add(id);
             }
         }
-        //int saveResult=addressRepository.saveMark(markListResult);
-   /*     for(AddressMark mark : markListResult){
+        List<AddressMarkForm> saveResult=addressFormRepository.saveAll(markListResult);
+        //另一种写法
+       /* for(AddressMarkForm mark : markListResult){
             em.merge(mark);
         }
         em.flush();
         em.clear();*/
-        return true;
-     /*   int updateStatus=addressRepository.updateMarkStatusById(idList);
+        int updateStatus=addressFormRepository.updateMarkStatusById(idList);
         if(saveResult.isEmpty()){
             return false;
         }else{
             return true;
-        }*/
+        }
     }
 }
