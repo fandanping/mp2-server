@@ -46,8 +46,6 @@ public class AddressSearchController {
     @GetMapping("/search/random")
      public Map<String,Object>  searchUnMark(String keyword,HttpServletRequest request){
         String userId = (String) request.getAttribute(Constant.USER_ID);
-       // Map<String ,List<AddressMark>> result = new HashMap<String ,List<AddressMark>>();
-       // result.put("addressMarkList",addressSearchService.showUnMarkList(userId,keyword));
         return addressSearchService.showUnMarkList(userId,keyword);
     }
 
