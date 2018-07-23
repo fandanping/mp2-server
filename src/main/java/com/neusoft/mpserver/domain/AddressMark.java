@@ -37,21 +37,21 @@ public class AddressMark {
     @Column(name ="qid")
     private String id;
     //省
-    private String provice;
+    //private String provice;
     //市
-    private String city;
+    //private String city;
     //区、县
-    private String area;
+    //private String area;
     //镇
-    private String town;
+    //private String town;
     //是否已标记marked
     private String marked;
     //标记人
     private String markUser;
     //标记时间
-    private String markTime;
+    //private String markTime;
     //状态
-    private Integer status;
+    //private Integer status;
 
 
 }

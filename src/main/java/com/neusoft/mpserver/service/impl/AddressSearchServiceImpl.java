@@ -1,5 +1,4 @@
 package com.neusoft.mpserver.service.impl;
-
 import com.neusoft.mpserver.dao.AddressFormRepository;
 import com.neusoft.mpserver.dao.AddressRepository;
 import com.neusoft.mpserver.domain.AddressMark;
@@ -7,9 +6,6 @@ import com.neusoft.mpserver.domain.AddressMarkForm;
 import com.neusoft.mpserver.service.AddressSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -21,7 +17,6 @@ import java.util.*;
  * @name fandp
  * @email fandp@neusoft.com
  */
-
 @Service
 public class AddressSearchServiceImpl implements AddressSearchService {
     @Autowired
@@ -85,23 +80,27 @@ public class AddressSearchServiceImpl implements AddressSearchService {
      */
     @Transactional
     @Override
-    public List<AddressMark> showUnMarkList(String userId, String keyword) {
+    public Map<String,Object> showUnMarkList(String userId, String keyword) {
         addressRepository.updateMarkStatus(userId);
+        Map<String ,Object> result = new HashMap<String ,Object>();
         if (keyword == null) {
             List<Object[]> addressMark = addressRepository.findByRandom();
             List<String> idList = this.reverseAddressMark(addressMark).get("idList");
             List<AddressMark> addressMarkList = this.reverseAddressMark(addressMark).get("addressMarkList");
             addressRepository.updateMarkUser(idList, userId);
-            return addressMarkList;
+            result.put("addressMarkList",addressMarkList);
+            return result;
         } else {
             List<Object[]> addressMark = addressRepository.findByMarkedAndAddressLike("%" + keyword + "%");
             if (addressMark.size() == 0) {
-                return null;
+                result.put("addressMarkList","");
+                return result;
             } else {
                 List<String> idList = this.reverseAddressMark(addressMark).get("idList");
                 List<AddressMark> addressMarkList = this.reverseAddressMark(addressMark).get("addressMarkList");
                 addressRepository.updateMarkUser(idList, userId);
-                return addressMarkList;
+                result.put("addressMarkList",addressMarkList);
+                return result;
             }
         }
     }

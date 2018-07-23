@@ -4,6 +4,7 @@ import com.neusoft.mpserver.domain.AddressMark;
 import com.neusoft.mpserver.domain.AddressMarkForm;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 地址标引模块：service层接口
@@ -15,7 +16,7 @@ public interface AddressSearchService {
     //查询正在标引列表
     public List<AddressMark> showMarkingList(String userId);
     //查询未标引地址列表
-    public List<AddressMark> showUnMarkList(String userId,String keyword);
+    public Map<String,Object> showUnMarkList(String userId, String keyword);
     //保存标引词
     public boolean addMark(String userId, List<AddressMarkForm> markList);
 }

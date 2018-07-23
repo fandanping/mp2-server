@@ -1,5 +1,4 @@
 package com.neusoft.mpserver.controller;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.neusoft.mpserver.domain.AddressMark;
@@ -8,13 +7,10 @@ import com.neusoft.mpserver.domain.Constant;
 import com.neusoft.mpserver.service.AddressSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 /**
  * address:查询未标引地址列表模块
  *
@@ -48,11 +44,11 @@ public class AddressSearchController {
      * @return
      */
     @GetMapping("/search/random")
-     public Map<String,List<AddressMark>>  searchUnMark(String keyword,HttpServletRequest request){
+     public Map<String,Object>  searchUnMark(String keyword,HttpServletRequest request){
         String userId = (String) request.getAttribute(Constant.USER_ID);
-        Map<String ,List<AddressMark>> result = new HashMap<String ,List<AddressMark>>();
-        result.put("addressMarkList",addressSearchService.showUnMarkList(userId,keyword));
-        return result;
+       // Map<String ,List<AddressMark>> result = new HashMap<String ,List<AddressMark>>();
+       // result.put("addressMarkList",addressSearchService.showUnMarkList(userId,keyword));
+        return addressSearchService.showUnMarkList(userId,keyword);
     }
 
     /**
