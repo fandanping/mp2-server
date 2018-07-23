@@ -1,11 +1,8 @@
 package com.neusoft.mpserver.dao;
-
 import com.neusoft.mpserver.domain.AddressMark;
-import com.neusoft.mpserver.domain.AddressMarkForm;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-
 import java.util.List;
 
 /**

@@ -2,7 +2,6 @@ package com.neusoft.mpserver.dao;
 
 import com.neusoft.mpserver.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.List;
 
 /**
