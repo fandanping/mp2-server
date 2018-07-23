@@ -30,11 +30,9 @@ public class AddressSearchController {
      * @return
      */
     @GetMapping("/search/marking")
-    public Map<String,List<AddressMark>> searchMarking(HttpServletRequest request){
+    public Map<String,Object> searchMarking(HttpServletRequest request){
         String userId = (String) request.getAttribute(Constant.USER_ID);
-        Map<String ,List<AddressMark>> result = new HashMap<String ,List<AddressMark>>();
-        result.put("addressMarkList",addressSearchService.showMarkingList(userId));
-        return result;
+        return addressSearchService.showMarkingList(userId);
     }
 
     /**

@@ -14,7 +14,7 @@ import java.util.Map;
  */
 public interface AddressSearchService {
     //查询正在标引列表
-    public List<AddressMark> showMarkingList(String userId);
+    public Map<String,Object> showMarkingList(String userId);
     //查询未标引地址列表
     public Map<String,Object> showUnMarkList(String userId, String keyword);
     //保存标引词

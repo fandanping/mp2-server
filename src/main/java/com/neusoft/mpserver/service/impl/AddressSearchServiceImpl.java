@@ -34,16 +34,19 @@ public class AddressSearchServiceImpl implements AddressSearchService {
      */
     @Transactional
     @Override
-    public List<AddressMark> showMarkingList(String userId) {
+    public Map<String,Object> showMarkingList(String userId) {
+        Map<String ,Object> result = new HashMap<String ,Object>();
         List<AddressMark> addressMarkingList = addressRepository.findByMarkUser(userId);
         if (addressMarkingList.isEmpty()) {
             List<Object[]> addressMark = addressRepository.findByRandom();
             List<String> idList = this.reverseAddressMark(addressMark).get("idList");
             List<AddressMark> addressMarkList = this.reverseAddressMark(addressMark).get("addressMarkList");
             addressRepository.updateMarkUser(idList, userId);
-            return addressMarkList;
+            result.put("addressMarkList",addressMarkList);
+            return result;
         } else {
-            return addressMarkingList;
+            result.put("addressMarkList",addressMarkingList);
+            return result;
         }
     }
 
