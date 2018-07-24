@@ -1,7 +1,6 @@
 package com.neusoft.mpserver.controller;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.neusoft.mpserver.domain.AddressMark;
 import com.neusoft.mpserver.domain.AddressMarkForm;
 import com.neusoft.mpserver.domain.Constant;
 import com.neusoft.mpserver.service.AddressSearchService;
@@ -61,8 +60,7 @@ public class AddressSearchController {
     public Map<String, Object> addAddress(@RequestBody Map postMap, HttpServletRequest request) {
         Gson gson = new Gson();
         String markStr = (String) postMap.get("markAddressList");
-        List<AddressMarkForm> markList = gson.fromJson(markStr, new TypeToken<List<AddressMarkForm>>() {
-        }.getType());
+        List<AddressMarkForm> markList = gson.fromJson(markStr, new TypeToken<List<AddressMarkForm>>() {}.getType());
         String userId = (String) request.getAttribute(Constant.USER_ID);
         boolean flag = addressSearchService.addMark(userId, markList);
         Map<String, Object> map = new HashMap<String, Object>();

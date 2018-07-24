@@ -14,7 +14,7 @@ public class AddressMarkForm {
     @Column(name ="qid")
     private String id;
     //省
-    private String provice;
+    private String province;
     //市
     private String city;
     //区、县
@@ -28,5 +28,5 @@ public class AddressMarkForm {
     //标记时间
     private String markTime;
     //状态
-    private Integer status;
+    private int status;
 }

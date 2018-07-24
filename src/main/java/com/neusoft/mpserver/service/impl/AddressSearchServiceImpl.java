@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
 /**
  * 地址标引-查询模块：service层实现
  * 只有在这一层加事务管理才是真正的事务管理
@@ -35,7 +36,7 @@ public class AddressSearchServiceImpl implements AddressSearchService {
     @Override
     public Map<String,Object> showMarkingList(String userId) {
         Map<String ,Object> result = new HashMap<String ,Object>();
-        List<AddressMark> addressMarkingList = addressRepository.findByMarkUser(userId);
+        List<Object[]> addressMarkingList = addressRepository.findByMarkUser(userId);
         if (addressMarkingList.isEmpty()) {
             List<Object[]> addressMark = addressRepository.findByRandom();
             List<String> idList = this.reverseAddressMark(addressMark).get("idList");
@@ -44,9 +45,11 @@ public class AddressSearchServiceImpl implements AddressSearchService {
             result.put("addressMarkList",addressMarkList);
             return result;
         } else {
-            result.put("addressMarkList",addressMarkingList);
+            List<AddressMark> addressMarkList = this.reverseAddressMark(addressMarkingList).get("addressMarkList");
+            result.put("addressMarkList",addressMarkList);
             return result;
         }
+
     }
 
     /**
@@ -60,14 +63,20 @@ public class AddressSearchServiceImpl implements AddressSearchService {
         List<AddressMark> addressMarkList = new ArrayList<AddressMark>();
         List<String> idList = new ArrayList();
         for (int i = 0; i < addressMark.size(); i++) {
+            Object[] param=addressMark.get(i);
             AddressMark address = new AddressMark();
-            address.setId(addressMark.get(i)[0].toString());
-            address.setAn(addressMark.get(i)[1].toString());
-            address.setAddress(addressMark.get(i)[2].toString());
-            address.setZip(addressMark.get(i)[3].toString());
+            address.setId(param[0].toString());
+            address.setAn(param[1].toString());
+            address.setAddress(param[2].toString());
+            if(param[3] ==null){
+                address.setZip("");
+            }else{
+                address.setZip(param[3].toString());
+            }
             addressMarkList.add(address);
-            idList.add(addressMark.get(i)[0].toString());
+            idList.add(param[0].toString());
         }
+        System.out.println("addressMarkList!!!!!!!!!!!!!!!!!!!!!"+addressMarkList);
         map.put("addressMarkList", addressMarkList);
         map.put("idList", idList);
         return map;

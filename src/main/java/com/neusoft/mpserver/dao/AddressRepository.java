@@ -11,7 +11,7 @@ import java.util.List;
 public interface AddressRepository extends JpaRepository<AddressMark,String>{
     //查询之前未标记的地址
     @Query("select id,an,address,zip from AddressMark where markUser=?1 and marked=2")
-    public List<AddressMark> findByMarkUser (String userId);
+    public List<Object[]> findByMarkUser (String userId);
 
     //将这个用户下的之前未标记的地址退回数据库
     @Modifying
