@@ -134,6 +134,7 @@ public class AddressSearchServiceImpl implements AddressSearchService {
                 Date day = new Date();
                 SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 addressMark.setMarkTime(df.format(day));
+                addressMark.setMarkUser(userId);
                 markListResult.add(addressMark);
             } else {
                 String id = addressMark.getId();
