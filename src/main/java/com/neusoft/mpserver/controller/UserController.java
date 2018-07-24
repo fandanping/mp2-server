@@ -61,9 +61,12 @@ public class UserController {
      * @return
      */
     @PostMapping("/logout")
-    public boolean logout(HttpServletRequest request) {
+    public Map<String,Object> logout(HttpServletRequest request) {
         String userId = (String) request.getAttribute(Constant.USER_ID);
-        return userService.logout(userId);
+        Map<String,Object> map=new HashMap<String,Object>();
+        boolean flag=userService.logout(userId);
+        map.put("flag",flag);
+        return  map;
     }
 
 
