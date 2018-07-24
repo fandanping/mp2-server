@@ -127,7 +127,7 @@ public class AddressSearchServiceImpl implements AddressSearchService {
     @Override
     public boolean addMark(String userId, List<AddressMarkForm> markList) {
         List<AddressMarkForm> markListResult = new ArrayList<AddressMarkForm>();
-        List<String> idList = new ArrayList<String>();
+       // List<String> idList = new ArrayList<String>();
         for (int i = 0; i < markList.size(); i++) {
             AddressMarkForm addressMark = markList.get(i);
             if (addressMark.getMarked().equals("1")) {
@@ -136,10 +136,10 @@ public class AddressSearchServiceImpl implements AddressSearchService {
                 addressMark.setMarkTime(df.format(day));
                 addressMark.setMarkUser(userId);
                 markListResult.add(addressMark);
-            } else {
+            } /*else {
                 String id = addressMark.getId();
                 idList.add(id);
-            }
+            }*/
         }
         List<AddressMarkForm> saveResult = addressFormRepository.saveAll(markListResult);
         //另一种写法
@@ -148,9 +148,9 @@ public class AddressSearchServiceImpl implements AddressSearchService {
         }
         em.flush();
         em.clear();*/
-       if(idList.size() !=0){
+     /*  if(idList.size() !=0){
            int updateStatus = addressFormRepository.updateMarkStatusById(idList);
-       }
+       }*/
 
         if (saveResult.isEmpty()) {
             return false;
