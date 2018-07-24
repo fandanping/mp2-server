@@ -147,7 +147,10 @@ public class AddressSearchServiceImpl implements AddressSearchService {
         }
         em.flush();
         em.clear();*/
-        int updateStatus = addressFormRepository.updateMarkStatusById(idList);
+       if(idList.size() !=0){
+           int updateStatus = addressFormRepository.updateMarkStatusById(idList);
+       }
+
         if (saveResult.isEmpty()) {
             return false;
         } else {
