@@ -28,5 +28,5 @@ public class AddressMarkForm {
     //标记时间
     private String markTime;
     //状态
-    private int status;
+    private Integer status;
 }
