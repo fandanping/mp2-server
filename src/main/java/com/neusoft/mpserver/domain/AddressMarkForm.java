@@ -7,7 +7,7 @@ import javax.persistence.Table;
 
 @Data
 @Entity
-@Table(name = "SIPO_AP_ADDRESS_TEST")
+@Table(name = "SIPO_AP_ADDRESS")
 public class AddressMarkForm {
     //用作标词id
     @Id

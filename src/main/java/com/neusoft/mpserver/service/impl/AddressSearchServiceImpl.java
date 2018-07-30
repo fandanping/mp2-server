@@ -67,7 +67,11 @@ public class AddressSearchServiceImpl implements AddressSearchService {
             AddressMark address = new AddressMark();
             address.setId(param[0].toString());
             address.setAn(param[1].toString());
-            address.setAddress(param[2].toString());
+            if (param[2] == null) {
+                address.setAddress("");
+            } else {
+                address.setAddress(param[2].toString());
+            }
             if(param[3] ==null){
                 address.setZip("");
             }else{
