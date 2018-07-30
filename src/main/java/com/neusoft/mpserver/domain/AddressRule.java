@@ -23,4 +23,6 @@ public class AddressRule {
     private String area;
 
     private Date createTime;
+
+    private String rule;
 }

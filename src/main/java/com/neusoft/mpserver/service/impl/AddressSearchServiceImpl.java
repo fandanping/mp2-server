@@ -29,6 +29,7 @@ public class AddressSearchServiceImpl implements AddressSearchService {
     //private EntityManager em;
     @Autowired
     private AddressFormRepository addressFormRepository;
+    @Autowired
     private AddressRuleRepository addressRuleRepository;
     /**
      * 查询正在标引的地址,若没有正在标引的词，随机查询20篇
@@ -139,7 +140,6 @@ public class AddressSearchServiceImpl implements AddressSearchService {
     @Override
     public boolean addMark(String userId, List<AddressMarkForm> markList,List<AddressRule> ruleList) {
         List<AddressMarkForm> markListResult = new ArrayList<AddressMarkForm>();
-        List<AddressRule> markRule=new  ArrayList<AddressRule>();
         for (int i = 0; i < markList.size(); i++) {
             AddressMarkForm addressMark = markList.get(i);
             if (addressMark.getMarked().equals("1")) {
@@ -152,7 +152,7 @@ public class AddressSearchServiceImpl implements AddressSearchService {
         }
         if(ruleList.size()!=0){
             for(int j=0;j<ruleList.size();j++){
-                AddressRule rule=new AddressRule();
+                AddressRule rule=ruleList.get(j);
                 Date day = new Date();
                 SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 String d=df.format(day);
@@ -161,11 +161,9 @@ public class AddressSearchServiceImpl implements AddressSearchService {
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                String ruleId= IDGenerator.generate();
-                rule.setId(ruleId);
-                markRule.add(rule);
+                rule.setId(IDGenerator.generate());
             }
-            List<AddressRule> saveRuleResult=addressRuleRepository.saveAll(markRule);
+            List<AddressRule> saveRuleResult=addressRuleRepository.saveAll(ruleList);
         }
         List<AddressMarkForm> saveMarkResult = addressFormRepository.saveAll(markListResult);
         //另一种写法

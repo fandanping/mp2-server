@@ -65,7 +65,7 @@ public class AddressSearchController {
         String userId = (String) request.getAttribute(Constant.USER_ID);
         //...
         String ruleStr=(String)postMap.get("addressRuleList");
-        List<AddressRule> ruleList = gson.fromJson(markStr, new TypeToken<List<AddressRule>>() {}.getType());
+        List<AddressRule> ruleList = gson.fromJson(ruleStr, new TypeToken<List<AddressRule>>() {}.getType());
 
         boolean flag = addressSearchService.addMark(userId, markList,ruleList);
         Map<String, Object> map = new HashMap<String, Object>();
