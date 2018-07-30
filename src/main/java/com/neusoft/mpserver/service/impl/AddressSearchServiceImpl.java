@@ -1,12 +1,16 @@
 package com.neusoft.mpserver.service.impl;
+import com.neusoft.mpserver.common.util.IDGenerator;
 import com.neusoft.mpserver.dao.AddressFormRepository;
 import com.neusoft.mpserver.dao.AddressRepository;
+import com.neusoft.mpserver.dao.AddressRuleRepository;
 import com.neusoft.mpserver.domain.AddressMark;
 import com.neusoft.mpserver.domain.AddressMarkForm;
+import com.neusoft.mpserver.domain.AddressRule;
 import com.neusoft.mpserver.service.AddressSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -25,7 +29,7 @@ public class AddressSearchServiceImpl implements AddressSearchService {
     //private EntityManager em;
     @Autowired
     private AddressFormRepository addressFormRepository;
-
+    private AddressRuleRepository addressRuleRepository;
     /**
      * 查询正在标引的地址,若没有正在标引的词，随机查询20篇
      *
@@ -77,10 +81,14 @@ public class AddressSearchServiceImpl implements AddressSearchService {
             }else{
                 address.setZip(param[3].toString());
             }
+            if(param[4] ==null){
+                address.setAppName("");
+            }else{
+                address.setAppName(param[4].toString());
+            }
             addressMarkList.add(address);
             idList.add(param[0].toString());
         }
-        System.out.println("addressMarkList!!!!!!!!!!!!!!!!!!!!!"+addressMarkList);
         map.put("addressMarkList", addressMarkList);
         map.put("idList", idList);
         return map;
@@ -129,9 +137,9 @@ public class AddressSearchServiceImpl implements AddressSearchService {
      */
     @Transactional
     @Override
-    public boolean addMark(String userId, List<AddressMarkForm> markList) {
+    public boolean addMark(String userId, List<AddressMarkForm> markList,List<AddressRule> ruleList) {
         List<AddressMarkForm> markListResult = new ArrayList<AddressMarkForm>();
-       // List<String> idList = new ArrayList<String>();
+        List<AddressRule> markRule=new  ArrayList<AddressRule>();
         for (int i = 0; i < markList.size(); i++) {
             AddressMarkForm addressMark = markList.get(i);
             if (addressMark.getMarked().equals("1")) {
@@ -140,12 +148,26 @@ public class AddressSearchServiceImpl implements AddressSearchService {
                 addressMark.setMarkTime(df.format(day));
                 addressMark.setMarkUser(userId);
                 markListResult.add(addressMark);
-            } /*else {
-                String id = addressMark.getId();
-                idList.add(id);
-            }*/
+            }
         }
-        List<AddressMarkForm> saveResult = addressFormRepository.saveAll(markListResult);
+        if(ruleList.size()!=0){
+            for(int j=0;j<ruleList.size();j++){
+                AddressRule rule=new AddressRule();
+                Date day = new Date();
+                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String d=df.format(day);
+                try {
+                    rule.setCreateTime(df.parse(d));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                String ruleId= IDGenerator.generate();
+                rule.setId(ruleId);
+                markRule.add(rule);
+            }
+            List<AddressRule> saveRuleResult=addressRuleRepository.saveAll(markRule);
+        }
+        List<AddressMarkForm> saveMarkResult = addressFormRepository.saveAll(markListResult);
         //另一种写法
        /* for(AddressMarkForm mark : markListResult){
             em.merge(mark);
@@ -156,7 +178,7 @@ public class AddressSearchServiceImpl implements AddressSearchService {
            int updateStatus = addressFormRepository.updateMarkStatusById(idList);
        }*/
 
-        if (saveResult.isEmpty()) {
+        if (saveMarkResult.isEmpty()) {
             return false;
         } else {
             return true;
