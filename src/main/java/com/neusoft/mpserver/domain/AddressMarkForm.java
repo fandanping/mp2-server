@@ -30,5 +30,6 @@ public class AddressMarkForm {
     //状态
     private Integer status;
     //address
+    @Column(name="app_address")
     private String address;
 }
