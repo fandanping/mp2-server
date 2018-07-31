@@ -29,4 +29,8 @@ public class AddressMarkForm {
     private String markTime;
     //状态
     private Integer status;
+    //address
+    @Column(name="app_address")
+    private String address;
+
 }

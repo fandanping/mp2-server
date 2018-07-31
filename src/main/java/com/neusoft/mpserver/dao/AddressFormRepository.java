@@ -12,4 +12,9 @@ public interface AddressFormRepository  extends JpaRepository<AddressMarkForm,St
     @Modifying
     @Query("update AddressMarkForm   set markUser='', marked='0'  where id  in (?1)")
     public  int updateMarkStatusById(List<String> id);
+
+    //精准去重
+    @Modifying
+    @Query("update AddressMarkForm set province=?2,city=?3,area=?4,town=?5 ,markUser=?1,marked='1' where address=?6 ")
+    public int updateSameAddress(String  userId,String province,String city,String area,String town,String address);
 }

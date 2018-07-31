@@ -148,6 +148,8 @@ public class AddressSearchServiceImpl implements AddressSearchService {
                 addressMark.setMarkTime(df.format(day));
                 addressMark.setMarkUser(userId);
                 markListResult.add(addressMark);
+                //精准匹配的数据库里全部置，去除重复数据
+                addressFormRepository.updateSameAddress(userId,addressMark.getProvince(),addressMark.getCity(),addressMark.getArea(),addressMark.getTown(),addressMark.getAddress());
             }
         }
         if(ruleList.size()!=0){
