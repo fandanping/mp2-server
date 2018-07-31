@@ -145,11 +145,9 @@ public class AddressSearchServiceImpl implements AddressSearchService {
             if (addressMark.getMarked().equals("1")) {
                 Date day = new Date();
                 SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                addressMark.setMarkTime(df.format(day));
-                addressMark.setMarkUser(userId);
-                markListResult.add(addressMark);
+                String date=df.format(day);
                 //精准匹配的数据库里全部置，去除重复数据
-                addressFormRepository.updateSameAddress(userId,addressMark.getProvince(),addressMark.getCity(),addressMark.getArea(),addressMark.getTown(),addressMark.getAddress());
+                int count=addressFormRepository.updateSameAddress(userId,addressMark.getProvince(),addressMark.getCity(),addressMark.getArea(),addressMark.getTown(),date,addressMark.getStatus(),addressMark.getAddress());
             }
         }
         if(ruleList.size()!=0){
@@ -167,7 +165,6 @@ public class AddressSearchServiceImpl implements AddressSearchService {
             }
             List<AddressRule> saveRuleResult=addressRuleRepository.saveAll(ruleList);
         }
-        List<AddressMarkForm> saveMarkResult = addressFormRepository.saveAll(markListResult);
         //另一种写法
        /* for(AddressMarkForm mark : markListResult){
             em.merge(mark);
@@ -178,10 +175,6 @@ public class AddressSearchServiceImpl implements AddressSearchService {
            int updateStatus = addressFormRepository.updateMarkStatusById(idList);
        }*/
 
-        if (saveMarkResult.isEmpty()) {
-            return false;
-        } else {
-            return true;
-        }
+     return true;
     }
 }
