@@ -32,4 +32,6 @@ public class AddressMarkForm {
     //address
     @Column(name="app_address")
     private String address;
+
+    private String appName;
 }

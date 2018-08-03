@@ -147,7 +147,7 @@ public class AddressSearchServiceImpl implements AddressSearchService {
                 SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 String date=df.format(day);
                 //精准匹配的数据库里全部置，去除重复数据
-                int count=addressFormRepository.updateSameAddress(userId,addressMark.getProvince(),addressMark.getCity(),addressMark.getArea(),addressMark.getTown(),date,addressMark.getStatus(),addressMark.getAddress());
+                int count=addressFormRepository.updateSameAddress(userId,addressMark.getProvince(),addressMark.getCity(),addressMark.getArea(),addressMark.getTown(),date,addressMark.getStatus(),addressMark.getAppName(),addressMark.getAddress());
             }
         }
         if(ruleList.size()!=0){
