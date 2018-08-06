@@ -20,4 +20,10 @@ public interface AddressSearchService {
     public Map<String,Object> showUnMarkList(String userId, String keyword);
     //保存标引词
     public boolean addMark(String userId, List<AddressMarkForm> markList, List<AddressRule> ruleList);
+    //查询今天所有规则,不带分页
+    public Map<String,Object> showRuleList();
+    //查询今天所有规则，带分页
+    public Map<String,Object> showRulePageList(String userId,String type,String keyword,int pageNumber,int size);
+    //修改标引规则（只能修改自己的）
+    public boolean ModifyRule(String userId,AddressRule rule);
 }

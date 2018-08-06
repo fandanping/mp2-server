@@ -14,4 +14,5 @@ public class Pagination implements Serializable {
     private int start;
     private int size;
     private int total;
+    private int pageNumber;
 }

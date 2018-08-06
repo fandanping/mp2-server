@@ -25,4 +25,8 @@ public class AddressRule {
     private Date createTime;
 
     private String rule;
+
+    private String userId;
+
+    private String address;
 }
