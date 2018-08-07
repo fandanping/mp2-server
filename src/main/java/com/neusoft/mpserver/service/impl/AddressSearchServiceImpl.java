@@ -320,7 +320,7 @@ public class AddressSearchServiceImpl implements AddressSearchService {
             if(param[7] == null){
                 rule.getUser().setUsername("");
             }else {
-                rule.getUser().setUsername(param[6].toString());
+                rule.getUser().setUsername(param[7].toString());
             }
             addressRuleList.add(rule);
         }
