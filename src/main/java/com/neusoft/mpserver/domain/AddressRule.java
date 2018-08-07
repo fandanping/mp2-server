@@ -31,4 +31,15 @@ public class AddressRule {
     @ManyToOne(cascade = {CascadeType.ALL})
     @JoinColumn(name = "userId")
     private User user = new User();
+
+/*    public AddressRule(String id, String province, String city, String area,Date createTime,String rule,String userId,String address) {
+        this.id = id;
+        this.province = province;
+        this.city = city;
+        this.area = area;
+        this.createTime = createTime;
+        this.userId = userId;
+        this.address = address;
+    }*/
+
 }

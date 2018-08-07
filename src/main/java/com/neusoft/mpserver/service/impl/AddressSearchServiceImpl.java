@@ -237,30 +237,31 @@ public class AddressSearchServiceImpl implements AddressSearchService {
         Pageable pageable = new PageRequest(pageNumber, size);
         List<Object[]> pageResult = new ArrayList<Object[]>();
         if (type.equals("1")) {  //查全部
-            total = addressRuleRepository.findRuleAllCount(time);
-            pageination.setTotal(total);
             if (keyword != null && !keyword.equals("")) {
+                total = addressRuleRepository.findRuleAllCountBykey(time,"%" + keyword + "%");
                 pageResult = addressRuleRepository.findRuleAllBykey(time, "%" + keyword + "%", pageable);
             } else {
+                total = addressRuleRepository.findRuleAllCount(time);
                 pageResult = addressRuleRepository.findRuleAll(time, pageable);
             }
         } else if (type.equals("2")) { //查自己
-            total = addressRuleRepository.findRuleMeCount(time, userId);
-            pageination.setTotal(total);
             if (keyword != null && !keyword.equals("")) {
+                total = addressRuleRepository.findRuleMeCountBykey(time, userId,"%" + keyword + "%");
                 pageResult = addressRuleRepository.findRuleMeBykey(time, "%" + keyword + "%", userId, pageable);
             } else {
+                total = addressRuleRepository.findRuleMeCount(time, userId);
                 pageResult = addressRuleRepository.findRuleMe(time, userId, pageable);
             }
         } else if (type.equals("3")) {  //查其他人
-            total = addressRuleRepository.findRuleOtherCount(time, userId);
-            pageination.setTotal(total);
             if (keyword != null && !keyword.equals("")) {
+                total = addressRuleRepository.findRuleOtherCount(time, userId);
                 pageResult = addressRuleRepository.findRuleOtherBykey(time, "%" + keyword + "%", userId, pageable);
             } else {
+                total = addressRuleRepository.findRuleOtherCount(time, userId);
                 pageResult = addressRuleRepository.findRuleOther(time, userId, pageable);
             }
         }
+        pageination.setTotal(total);
         map.put("pagination", pageination);
         map.put("addressRuleList", this.reverseRuleALL(pageResult));
         return map;

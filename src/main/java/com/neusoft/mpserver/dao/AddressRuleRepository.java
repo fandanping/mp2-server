@@ -52,17 +52,26 @@ public interface AddressRuleRepository extends JpaRepository<AddressRule, String
     @Query("update AddressRule set rule=?6,province=?3,city=?4,area=?5 where id=?2 and userId=?1")
     public int updateRule(String userId, String id, String province, String city, String area, String rule);
 
-    //查询今天所有的总数
+    //查询今天所有的总数 不带关键词
     @Query(value = "select count(1) from sipo_ap_address_rule a ,sipo_mp_user b where a.create_time >to_date( ?1, 'yyyy/mm/dd hh24:mi:ss') and a.user_id=b.id", nativeQuery = true)
     int findRuleAllCount(String time);
+    //查询今天所有的总数 带关键词
+    @Query(value = "select count(1) from sipo_ap_address_rule a ,sipo_mp_user b where a.create_time >to_date( ?1, 'yyyy/mm/dd hh24:mi:ss') and a.user_id=b.id and a.rule like ?2", nativeQuery = true)
+    int findRuleAllCountBykey (String time,String keyword);
 
-    //查询自己今天设置的总数
+    //查询自己今天设置的总数 不带关键词
     @Query(value = "select count(1) from sipo_ap_address_rule a,sipo_mp_user b where a.create_time >to_date( ?1, 'yyyy/mm/dd hh24:mi:ss') and a.user_id=?2 and a.user_id=b.id", nativeQuery = true)
     int findRuleMeCount(String time, String userId);
+    //查询自己今天设置的总数 带关键词
+    @Query(value = "select count(1) from sipo_ap_address_rule a,sipo_mp_user b where a.create_time >to_date( ?1, 'yyyy/mm/dd hh24:mi:ss') and a.user_id=?2 and a.user_id=b.id and a.rule like ?3", nativeQuery = true)
+    int findRuleMeCountBykey(String time, String userId,String keyword);
 
     //查询其他人今天设置的总数a
     @Query(value = "select count(1) from sipo_ap_address_rule a,sipo_mp_user b  where a.create_time >to_date( ?1, 'yyyy/mm/dd hh24:mi:ss') and a.user_id !=?2 and a.user_id=b.id", nativeQuery = true)
     int findRuleOtherCount(String time, String userId);
+    //查询其他人今天设置的总数a 带关键词
+    @Query(value = "select count(1) from sipo_ap_address_rule a,sipo_mp_user b  where a.create_time >to_date( ?1, 'yyyy/mm/dd hh24:mi:ss') and a.user_id !=?2 and a.user_id=b.id and a.rule like ?3", nativeQuery = true)
+    int findRuleOtherCountBykey(String time, String userId,String keyword);
 
 
 }
