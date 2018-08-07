@@ -256,7 +256,7 @@ public class AddressSearchServiceImpl implements AddressSearchService {
                 pageResult = addressRuleRepository.findRuleOther(time, userId, pageable);
             }
         }
-        map.put("pagation",pageination);
+        map.put("pagination",pageination);
         map.put("addressRuleList",this.reverseRuleALL(pageResult));
         return map;
     }

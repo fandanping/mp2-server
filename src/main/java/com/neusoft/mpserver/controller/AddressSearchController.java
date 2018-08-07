@@ -98,9 +98,9 @@ public class AddressSearchController {
      * @return
      */
     @GetMapping("/rule/list/page")
-    public Map<String, Object> getRulePageList(String type, String keyword, int pagenumber, int size, HttpServletRequest request) {
+    public Map<String, Object> getRulePageList(String type, String keyword, int pageNumber, int size, HttpServletRequest request) {
         String userId = (String) request.getAttribute(Constant.USER_ID);
-        return addressSearchService.showRulePageList(userId, type, keyword, pagenumber, size);
+        return addressSearchService.showRulePageList(userId, type, keyword, pageNumber, size);
     }
 
     /**
