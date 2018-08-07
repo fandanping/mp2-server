@@ -234,7 +234,7 @@ public class AddressSearchServiceImpl implements AddressSearchService {
         if (type.equals("1")) {  //查全部
             total=addressRuleRepository.findRuleAllCount(time);
             pageination.setTotal(total);
-            if (keyword != null) {
+            if (keyword != null && !keyword.equals("")) {
                 pageResult = addressRuleRepository.findRuleAllBykey(time, "%" + keyword + "%", pageable);
             } else {
                 pageResult = addressRuleRepository.findRuleAll(time, pageable);
@@ -242,7 +242,7 @@ public class AddressSearchServiceImpl implements AddressSearchService {
         } else if (type.equals("2")) { //查自己
             total=addressRuleRepository.findRuleMeCount(time,userId);
             pageination.setTotal(total);
-            if (keyword != null) {
+            if (keyword != null && !keyword.equals("")) {
                 pageResult = addressRuleRepository.findRuleMeBykey(time, "%" + keyword + "%", userId, pageable);
             } else {
                 pageResult = addressRuleRepository.findRuleMe(time, userId, pageable);
@@ -250,7 +250,7 @@ public class AddressSearchServiceImpl implements AddressSearchService {
         } else if (type.equals("3")) {  //查其他人
             total=addressRuleRepository.findRuleOtherCount(time,userId);
             pageination.setTotal(total);
-            if (keyword != null) {
+            if (keyword != null && !keyword.equals("")) {
                 pageResult = addressRuleRepository.findRuleOtherBykey(time, "%" + keyword + "%", userId, pageable);
             } else {
                 pageResult = addressRuleRepository.findRuleOther(time, userId, pageable);
