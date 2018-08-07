@@ -1,9 +1,10 @@
 package com.neusoft.mpserver.domain;
 
 import lombok.Data;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * user映射实体类
@@ -23,7 +24,11 @@ public class User {
     private String password;
     //注册时间
     private String createTime;
-
+/*
+    @OneToMany(cascade={ CascadeType.ALL })
+    @JoinColumn(name="id")
+    private Collection<AddressRule> addresses = new ArrayList<AddressRule>();
+*/
 
 
 }

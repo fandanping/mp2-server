@@ -1,6 +1,7 @@
 package com.neusoft.mpserver.dao;
 
 import com.neusoft.mpserver.domain.AddressRule;
+import com.neusoft.mpserver.domain.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,32 +18,36 @@ public interface AddressRuleRepository extends JpaRepository<AddressRule, String
 
     //查询今天所有的规则，不带分页
 
-    @Query(value = "select rule_id,nvl(rule,''),nvl(province,''),nvl(city,''),nvl(area,''),nvl(user_id,'') from sipo_ap_address_rule where create_time >to_date(?1,'yyyy/mm/dd hh24:mi:ss') order by create_time desc", nativeQuery = true)
+    //@Query(value = "select rule_id,nvl(rule,''),nvl(province,''),nvl(city,''),nvl(area,''),nvl(user_id,'') from sipo_ap_address_rule where create_time >to_date(?1,'yyyy/mm/dd hh24:mi:ss') order by create_time desc", nativeQuery = true)
+    @Query(value = "select a.rule_id,nvl(a.rule,''),nvl(a.province,''),nvl(a.city,''),nvl(a.area,''),nvl(a.user_id,''),b.username from sipo_ap_address_rule a, sipo_mp_user b where a.create_time >to_date(?1,'yyyy/mm/dd hh24:mi:ss')  and a.user_id=b.id order by a.create_time desc", nativeQuery = true)
     public List<Object[]> queryRule(String time);
+
+/*    @Query(value="select username from User where id=?1")
+    public User queryUser(String userid);*/
 
     //查询今天所有的规则，带分页
     //1.查询所有的，带关键词
-    @Query(value = "select rule_id,nvl(address,''), nvl(rule,''),nvl(province,''),nvl(city,''),nvl(area,''),nvl(user_id,'') from sipo_ap_address_rule where create_time >to_date( ?1, 'yyyy/mm/dd hh24:mi:ss') and rule like ?2 order by create_time desc", nativeQuery = true)
+    @Query(value = "select a.rule_id,nvl(a.address,''), nvl(a.rule,''),nvl(a.province,''),nvl(a.city,''),nvl(a.area,''),nvl(a.user_id,''),b.username  from sipo_ap_address_rule a ,sipo_mp_user b where a.create_time >to_date( ?1, 'yyyy/mm/dd hh24:mi:ss') and a.rule like ?2  and a.user_id=b.id order by a.create_time desc", nativeQuery = true)
     List<Object[]> findRuleAllBykey(String time, String keyword, Pageable pageable);
 
     //查询所有的，不带关键词
-    @Query(value = "select rule_id,nvl(address,''), nvl(rule,''),nvl(province,''),nvl(city,''),nvl(area,''),nvl(user_id,'') from sipo_ap_address_rule where create_time >to_date( ?1, 'yyyy/mm/dd hh24:mi:ss') order by create_time desc", nativeQuery = true)
+    @Query(value = "select a.rule_id,nvl(a.address,''), nvl(a.rule,''),nvl(a.province,''),nvl(a.city,''),nvl(a.area,''),nvl(a.user_id,'') ,b.username from sipo_ap_address_rule a,sipo_mp_user b  where a.create_time >to_date( ?1, 'yyyy/mm/dd hh24:mi:ss')  and a.user_id=b.id order by a.create_time desc", nativeQuery = true)
     List<Object[]> findRuleAll(String time, Pageable pageable);
 
     //查询自己的，带关键词
-    @Query(value = "select rule_id,nvl(address,''), nvl(rule,''),nvl(province,''),nvl(city,''),nvl(area,''),nvl(user_id,'') from sipo_ap_address_rule where create_time >to_date( ?1, 'yyyy/mm/dd hh24:mi:ss') and rule like ?2 and user_id=?3  order by create_time desc", nativeQuery = true)
+    @Query(value = "select a.rule_id,nvl(a.address,''), nvl(a.rule,''),nvl(a.province,''),nvl(a.city,''),nvl(a.area,''),nvl(a.user_id,''),b.username from sipo_ap_address_rule a,sipo_mp_user b where a.create_time >to_date( ?1, 'yyyy/mm/dd hh24:mi:ss') and a.rule like ?2 and a.user_id=?3  and a.user_id=b.id order by a.create_time desc", nativeQuery = true)
     List<Object[]> findRuleMeBykey(String time, String keyword, String userId, Pageable pageable);
 
     //查询自己的，不带关键词
-    @Query(value = "select rule_id,nvl(address,''), nvl(rule,''),nvl(province,''),nvl(city,''),nvl(area,''),nvl(user_id,'') from sipo_ap_address_rule where create_time >to_date( ?1, 'yyyy/mm/dd hh24:mi:ss')  and user_id=?2 order by create_time desc", nativeQuery = true)
+    @Query(value = "select a.rule_id,nvl(a.address,''), nvl(a.rule,''),nvl(a.province,''),nvl(a.city,''),nvl(a.area,''),nvl(a.user_id,''),b.username from sipo_ap_address_rule a,sipo_mp_user b where a.create_time >to_date( ?1, 'yyyy/mm/dd hh24:mi:ss')  and a.user_id=?2  and a.user_id=b.id order by a.create_time desc", nativeQuery = true)
     List<Object[]> findRuleMe(String time, String userId, Pageable pageable);
 
     //查询他人的，带关键词
-    @Query(value = "select rule_id,nvl(address,''), nvl(rule,''),nvl(province,''),nvl(city,''),nvl(area,''),nvl(user_id,'') from sipo_ap_address_rule where create_time >to_date( ?1, 'yyyy/mm/dd hh24:mi:ss') and rule like ?2 and user_id !=?3 order by create_time desc ", nativeQuery = true)
+    @Query(value = "select a.rule_id,nvl(a.address,''), nvl(a.rule,''),nvl(a.province,''),nvl(a.city,''),nvl(a.area,''),nvl(a.user_id,'') ,b.username from sipo_ap_address_rule a,sipo_mp_user b where a.create_time >to_date( ?1, 'yyyy/mm/dd hh24:mi:ss') and a.rule like ?2 and a.user_id !=?3 and a.user_id=b.id order by a.create_time desc ", nativeQuery = true)
     List<Object[]> findRuleOtherBykey(String time, String keyword, String userId, Pageable pageable);
 
     //查询他人的，不带关键词
-    @Query(value = "select rule_id,nvl(address,''), nvl(rule,''),nvl(province,''),nvl(city,''),nvl(area,''),nvl(user_id,'') from sipo_ap_address_rule where create_time >to_date( ?1, 'yyyy/mm/dd hh24:mi:ss')  and user_id != ?2 order by create_time desc", nativeQuery = true)
+    @Query(value = "select a.rule_id,nvl(a.address,''), nvl(a.rule,''),nvl(a.province,''),nvl(a.city,''),nvl(a.area,''),nvl(a.user_id,'') ,b.username  from sipo_ap_address_rule a,sipo_mp_user b where a.create_time >to_date( ?1, 'yyyy/mm/dd hh24:mi:ss')  and a.user_id != ?2 and a.user_id=b.id order by a.create_time desc", nativeQuery = true)
     List<Object[]> findRuleOther(String time, String userId, Pageable pageable);
 
     //修改规则

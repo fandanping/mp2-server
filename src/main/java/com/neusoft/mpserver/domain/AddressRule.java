@@ -1,10 +1,8 @@
 package com.neusoft.mpserver.domain;
 
 import lombok.Data;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+
+import javax.persistence.*;
 import java.util.Date;
 
 @Data
@@ -25,8 +23,12 @@ public class AddressRule {
     private Date createTime;
 
     private String rule;
-
+    @Column(insertable=false,updatable=false)
     private String userId;
 
     private String address;
+
+    @ManyToOne(cascade = { CascadeType.ALL })
+    @JoinColumn(name="userId")
+    private User user=new User();
 }

@@ -10,7 +10,6 @@ import com.neusoft.mpserver.domain.AddressMarkForm;
 import com.neusoft.mpserver.domain.AddressRule;
 import com.neusoft.mpserver.service.AddressSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -316,6 +315,11 @@ public class AddressSearchServiceImpl implements AddressSearchService {
             } else {
                 rule.setUserId(param[6].toString());
             }
+            if(param[7] == null){
+                rule.getUser().setUsername("");
+            }else {
+                rule.getUser().setUsername(param[6].toString());
+            }
             addressRuleList.add(rule);
         }
 
@@ -347,6 +351,11 @@ public class AddressSearchServiceImpl implements AddressSearchService {
                 rule.setUserId("");
             } else {
                 rule.setUserId(param[5].toString());
+            }
+          if(param[6] == null){
+               rule.getUser().setUsername("");
+            }else {
+              rule.getUser().setUsername(param[6].toString());
             }
             addressRuleList.add(rule);
         }
