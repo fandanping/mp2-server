@@ -4,19 +4,19 @@ import com.neusoft.mpserver.common.domain.Pagination;
 import com.neusoft.mpserver.common.util.IDGenerator;
 import com.neusoft.mpserver.dao.AddressFormRepository;
 import com.neusoft.mpserver.dao.AddressRepository;
+import com.neusoft.mpserver.dao.AddressRuleFormRepository;
 import com.neusoft.mpserver.dao.AddressRuleRepository;
 import com.neusoft.mpserver.domain.AddressMark;
 import com.neusoft.mpserver.domain.AddressMarkForm;
 import com.neusoft.mpserver.domain.AddressRule;
+import com.neusoft.mpserver.domain.AddressRuleForm;
 import com.neusoft.mpserver.service.AddressSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 import javax.transaction.Transactional;
 import java.text.ParseException;
-import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -38,6 +38,9 @@ public class AddressSearchServiceImpl implements AddressSearchService {
     private AddressFormRepository addressFormRepository;
     @Autowired
     private AddressRuleRepository addressRuleRepository;
+    @Autowired
+    private AddressRuleFormRepository addressRuleFormRepository;
+
 
     /**
      * 查询正在标引的地址,若没有正在标引的词，随机查询20篇
@@ -145,7 +148,7 @@ public class AddressSearchServiceImpl implements AddressSearchService {
      */
     @Transactional
     @Override
-    public boolean addMark(String userId, List<AddressMarkForm> markList, List<AddressRule> ruleList) {
+    public boolean addMark(String userId, List<AddressMarkForm> markList, List<AddressRuleForm> ruleList) {
         List<AddressMarkForm> markListResult = new ArrayList<AddressMarkForm>();
         for (int i = 0; i < markList.size(); i++) {
             AddressMarkForm addressMark = markList.get(i);
@@ -168,7 +171,7 @@ public class AddressSearchServiceImpl implements AddressSearchService {
         }
         if (ruleList.size() != 0) {
             for (int j = 0; j < ruleList.size(); j++) {
-                AddressRule rule = ruleList.get(j);
+                AddressRuleForm rule = ruleList.get(j);
                 Date day = new Date();
                 SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 String d = df.format(day);
@@ -180,7 +183,7 @@ public class AddressSearchServiceImpl implements AddressSearchService {
                 rule.setId(IDGenerator.generate());
                 rule.setUserId(userId);
             }
-            List<AddressRule> saveRuleResult = addressRuleRepository.saveAll(ruleList);
+            List<AddressRuleForm> saveRuleResult = addressRuleFormRepository.saveAll(ruleList);
         }
         //另一种写法
        /* for(AddressMarkForm mark : markListResult){

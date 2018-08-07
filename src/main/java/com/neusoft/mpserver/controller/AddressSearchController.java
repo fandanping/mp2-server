@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.neusoft.mpserver.domain.AddressMarkForm;
 import com.neusoft.mpserver.domain.AddressRule;
+import com.neusoft.mpserver.domain.AddressRuleForm;
 import com.neusoft.mpserver.domain.Constant;
 import com.neusoft.mpserver.service.AddressSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,7 +69,7 @@ public class AddressSearchController {
         String userId = (String) request.getAttribute(Constant.USER_ID);
         //...
         String ruleStr = (String) postMap.get("addressRuleList");
-        List<AddressRule> ruleList = gson.fromJson(ruleStr, new TypeToken<List<AddressRule>>() {
+        List<AddressRuleForm> ruleList = gson.fromJson(ruleStr, new TypeToken<List<AddressRuleForm>>() {
         }.getType());
         boolean flag = addressSearchService.addMark(userId, markList, ruleList);
         Map<String, Object> map = new HashMap<String, Object>();
@@ -92,7 +93,7 @@ public class AddressSearchController {
      *
      * @param type
      * @param keyword
-     * @param pagenumber
+     * @param pageNumber
      * @param size
      * @param request
      * @return
