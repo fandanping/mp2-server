@@ -8,12 +8,13 @@ import javax.persistence.Table;
 
 /**
  * mark映射实体类
+ *
  * @name fandp
  * @email fandp@neusoft.com
  */
 @Data
 @Entity
-@Table(name="SIPO_MP_IPC_MARK")
+@Table(name = "SIPO_MP_IPC_MARK")
 public class IpcMark {
     //id
     @Id

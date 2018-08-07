@@ -2,6 +2,7 @@ package com.neusoft.mpserver.domain;
 
 /**
  * 常量值
+ *
  * @name fandp
  * @email fandp@neusoft.com
  */
@@ -9,7 +10,7 @@ public class Constant {
     //注册成功code码值
     public static final String SUCCESS_REGISTER = "1";
     //注册失败code码值
-    public static  final String FAIL_REGISTER = "2";
+    public static final String FAIL_REGISTER = "2";
     //登录查询没有用户码值
     public static final String NOUSER_LOGIN = "2";
     //登录成功
@@ -22,7 +23,7 @@ public class Constant {
     public static final String EXPIRED_LOGIN = "2";
 
     //根据ic查询中文英文解释码值
-    public static final String IPC_FIELDS="IC,UTCN,UTEN";
+    public static final String IPC_FIELDS = "IC,UTCN,UTEN";
 
     public static final String CNABS_DB = "CNABS";
     /*********** zhengchj ***********/
@@ -35,6 +36,6 @@ public class Constant {
     public static final String OTHER_FIELDS = "NRD_AN,CCODE,CNAME";
     public static final String IPC_DB = "IPC8";
     /************ fandp ****************/
-    public static final String USER_ID="user_id";
+    public static final String USER_ID = "user_id";
     public static final String NO_IPC = "0";
 }

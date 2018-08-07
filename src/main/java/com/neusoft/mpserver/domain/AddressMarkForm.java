@@ -1,5 +1,7 @@
 package com.neusoft.mpserver.domain;
+
 import lombok.Data;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -11,7 +13,7 @@ import javax.persistence.Table;
 public class AddressMarkForm {
     //用作标词id
     @Id
-    @Column(name ="qid")
+    @Column(name = "qid")
     private String id;
     //省
     private String province;
@@ -30,7 +32,7 @@ public class AddressMarkForm {
     //状态
     private Integer status;
     //address
-    @Column(name="app_address")
+    @Column(name = "app_address")
     private String address;
 
     private String appName;

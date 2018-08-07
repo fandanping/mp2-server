@@ -24,11 +24,4 @@ public class User {
     private String password;
     //注册时间
     private String createTime;
-/*
-    @OneToMany(cascade={ CascadeType.ALL })
-    @JoinColumn(name="id")
-    private Collection<AddressRule> addresses = new ArrayList<AddressRule>();
-*/
-
-
 }

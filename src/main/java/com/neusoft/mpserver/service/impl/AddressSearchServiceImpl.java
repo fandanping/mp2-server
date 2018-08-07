@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
 import javax.transaction.Transactional;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -142,6 +143,7 @@ public class AddressSearchServiceImpl implements AddressSearchService {
 
     /**
      * 保存标引词updateMarkUser
+     *
      * @param userId
      * @param markList
      * @return
@@ -220,22 +222,22 @@ public class AddressSearchServiceImpl implements AddressSearchService {
     @Transactional
     @Override
     public Map<String, Object> showRulePageList(String userId, String type, String keyword, int pageNumber, int size) {
-        Map<String,Object> map=new HashMap<String,Object>();
+        Map<String, Object> map = new HashMap<String, Object>();
         //拼接日期
         Date day = new Date();
         SimpleDateFormat df = new SimpleDateFormat("yyyy/MM/dd");
         String time = df.format(day) + " 06:00:00";
         //查总数
-        Pagination pageination=new Pagination();
+        Pagination pageination = new Pagination();
         pageination.setPageNumber(pageNumber);
         pageination.setSize(size);
-        pageination.setStart(pageNumber * size+1);
-        int total=0;
+        pageination.setStart(pageNumber * size + 1);
+        int total = 0;
         //分页查询数据
         Pageable pageable = new PageRequest(pageNumber, size);
         List<Object[]> pageResult = new ArrayList<Object[]>();
         if (type.equals("1")) {  //查全部
-            total=addressRuleRepository.findRuleAllCount(time);
+            total = addressRuleRepository.findRuleAllCount(time);
             pageination.setTotal(total);
             if (keyword != null && !keyword.equals("")) {
                 pageResult = addressRuleRepository.findRuleAllBykey(time, "%" + keyword + "%", pageable);
@@ -243,7 +245,7 @@ public class AddressSearchServiceImpl implements AddressSearchService {
                 pageResult = addressRuleRepository.findRuleAll(time, pageable);
             }
         } else if (type.equals("2")) { //查自己
-            total=addressRuleRepository.findRuleMeCount(time,userId);
+            total = addressRuleRepository.findRuleMeCount(time, userId);
             pageination.setTotal(total);
             if (keyword != null && !keyword.equals("")) {
                 pageResult = addressRuleRepository.findRuleMeBykey(time, "%" + keyword + "%", userId, pageable);
@@ -251,7 +253,7 @@ public class AddressSearchServiceImpl implements AddressSearchService {
                 pageResult = addressRuleRepository.findRuleMe(time, userId, pageable);
             }
         } else if (type.equals("3")) {  //查其他人
-            total=addressRuleRepository.findRuleOtherCount(time,userId);
+            total = addressRuleRepository.findRuleOtherCount(time, userId);
             pageination.setTotal(total);
             if (keyword != null && !keyword.equals("")) {
                 pageResult = addressRuleRepository.findRuleOtherBykey(time, "%" + keyword + "%", userId, pageable);
@@ -259,8 +261,8 @@ public class AddressSearchServiceImpl implements AddressSearchService {
                 pageResult = addressRuleRepository.findRuleOther(time, userId, pageable);
             }
         }
-        map.put("pagination",pageination);
-        map.put("addressRuleList",this.reverseRuleALL(pageResult));
+        map.put("pagination", pageination);
+        map.put("addressRuleList", this.reverseRuleALL(pageResult));
         return map;
     }
 
@@ -274,7 +276,7 @@ public class AddressSearchServiceImpl implements AddressSearchService {
     @Transactional
     @Override
     public boolean ModifyRule(String userId, AddressRule rule) {
-        addressRuleRepository.updateRule(userId, rule.getId(), rule.getProvince(),  rule.getCity(), rule.getArea(), rule.getRule());
+        addressRuleRepository.updateRule(userId, rule.getId(), rule.getProvince(), rule.getCity(), rule.getArea(), rule.getRule());
         return true;
     }
 
@@ -284,7 +286,7 @@ public class AddressSearchServiceImpl implements AddressSearchService {
      * @param ruleList
      * @return
      */
-    private  List<AddressRule> reverseRuleALL(List<Object[]> ruleList) {
+    private List<AddressRule> reverseRuleALL(List<Object[]> ruleList) {
         List<AddressRule> addressRuleList = new ArrayList<AddressRule>();
         for (int i = 0; i < ruleList.size(); i++) {
             Object[] param = ruleList.get(i);
@@ -320,14 +322,13 @@ public class AddressSearchServiceImpl implements AddressSearchService {
             } else {
                 rule.setUserId(param[6].toString());
             }
-            if(param[7] == null){
+            if (param[7] == null) {
                 rule.getUser().setUsername("");
-            }else {
+            } else {
                 rule.getUser().setUsername(param[7].toString());
             }
             addressRuleList.add(rule);
         }
-
         return addressRuleList;
     }
 
@@ -357,10 +358,10 @@ public class AddressSearchServiceImpl implements AddressSearchService {
             } else {
                 rule.setUserId(param[5].toString());
             }
-          if(param[6] == null){
-               rule.getUser().setUsername("");
-            }else {
-              rule.getUser().setUsername(param[6].toString());
+            if (param[6] == null) {
+                rule.getUser().setUsername("");
+            } else {
+                rule.getUser().setUsername(param[6].toString());
             }
             addressRuleList.add(rule);
         }

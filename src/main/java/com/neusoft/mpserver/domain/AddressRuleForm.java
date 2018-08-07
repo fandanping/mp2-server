@@ -11,7 +11,7 @@ import java.util.Date;
 public class AddressRuleForm {
     //用作标词id
     @Id
-    @Column(name ="rule_id")
+    @Column(name = "rule_id")
     private String id;
     //省
     private String province;
