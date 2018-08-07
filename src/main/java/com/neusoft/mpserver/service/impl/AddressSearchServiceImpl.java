@@ -214,6 +214,7 @@ public class AddressSearchServiceImpl implements AddressSearchService {
     /**
      * 查询今天的所有规则，带分页
      */
+    @Transactional
     @Override
     public Map<String, Object> showRulePageList(String userId, String type, String keyword, int pageNumber, int size) {
         Map<String,Object> map=new HashMap<String,Object>();
@@ -267,6 +268,7 @@ public class AddressSearchServiceImpl implements AddressSearchService {
      * @param rule
      * @return
      */
+    @Transactional
     @Override
     public boolean ModifyRule(String userId, AddressRule rule) {
         addressRuleRepository.updateRule(userId, rule.getId(), rule.getProvince(),  rule.getCity(), rule.getArea(), rule.getRule());
