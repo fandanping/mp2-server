@@ -282,6 +282,19 @@ public class AddressSearchServiceImpl implements AddressSearchService {
     }
 
     /**
+     * 删除规则
+     * @param id
+     * @param userId
+     * @return
+     */
+    @Transactional
+    @Override
+    public boolean deleteRule(String id, String userId) {
+        addressRuleRepository.deleteByIdAndUserId(id, userId);
+        return true;
+    }
+
+    /**
      * 规则转换器:传给前台带地址
      *
      * @param ruleList

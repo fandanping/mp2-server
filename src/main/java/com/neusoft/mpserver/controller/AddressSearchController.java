@@ -123,4 +123,20 @@ public class AddressSearchController {
         map.put("flag", flag);
         return map;
     }
+
+    /**
+     * 根据ID删除标引规则
+     * @param postMap
+     * @param request
+     * @return
+     */
+    @PostMapping("/rule/delete")
+    public Map<String, Object> deleteRule(@RequestBody Map postMap, HttpServletRequest request) {
+        String id = (String) postMap.get("id");
+        String userId = (String) request.getAttribute(Constant.USER_ID);
+        boolean flag = addressSearchService.deleteRule(id, userId);
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("flag", flag);
+        return map;
+    }
 }

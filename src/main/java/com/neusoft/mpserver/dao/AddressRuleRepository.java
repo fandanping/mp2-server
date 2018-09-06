@@ -73,5 +73,9 @@ public interface AddressRuleRepository extends JpaRepository<AddressRule, String
     @Query(value = "select count(1) from sipo_ap_address_rule a,sipo_mp_user b  where a.create_time >to_date( ?1, 'yyyy/mm/dd hh24:mi:ss') and a.user_id !=?2 and a.user_id=b.id and a.rule like ?3", nativeQuery = true)
     int findRuleOtherCountBykey(String time, String userId,String keyword);
 
+    //删除标引规则
+    @Modifying
+    @Query(value = "delete from AddressRule where id=?1 and userId=?2")
+    void deleteByIdAndUserId(String id, String userId);
 
 }

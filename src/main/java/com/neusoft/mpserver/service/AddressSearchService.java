@@ -27,4 +27,6 @@ public interface AddressSearchService {
     public Map<String,Object> showRulePageList(String userId,String type,String keyword,int pageNumber,int size);
     //修改标引规则（只能修改自己的）
     public boolean ModifyRule(String userId,AddressRule rule);
+
+    boolean deleteRule(String id, String userId);
 }
