@@ -39,9 +39,9 @@ public class IpcSearchServiceImpl implements IpcSearchService {
         int size = recordList.size();
         if (size > 0) {
             patentList = new ArrayList<Map<String, String>>();
-            String resultAn="";
-
+            //String resultAn="";
             for (int i = 0; i < size; i++) {
+                String resultAn="";
                 Map<String, String> assembleData=AssembleData(recordList.get(i).getDataMap());
                 String an=assembleData.get("NRD_AN");
                 if(i== size-1){
