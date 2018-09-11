@@ -10,9 +10,14 @@ import com.neusoft.mpserver.common.domain.Pagination;
 import com.neusoft.mpserver.common.domain.Record;
 import com.neusoft.mpserver.common.domain.TrsResult;
 import com.neusoft.mpserver.common.engine.TrsEngine;
+import com.neusoft.mpserver.sipo57.domain.Constant;
 import com.trs.zl.TRSSearch;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import sun.nio.ch.IOUtil;
+
+import java.io.InputStream;
 
 /**
  * trs引擎实现
@@ -80,8 +85,16 @@ public class TrsEngineImpl implements TrsEngine {
                 if (pageSize-- > 0) {
                     Record record = new Record();
                     for (String f : fields) {
-                        String r = result.getString(f, "red");
-                        r = TRSSearch.dealTRSRSString(r);
+                        String r = "";
+                        if(f.equals(Constant.CLMS) || f.equals(Constant.DESC)){
+                            InputStream is = result.getBinaryStream(f, 0);
+                            if(is != null){
+                                r = IOUtils.toString(is, "UTF-8");
+                            }
+                        }else{
+                            r = result.getString(f, "red");
+                            r = TRSSearch.dealTRSRSString(r);
+                        }
                         record.getDataMap().put(f, r);
                     }
                     rs.getRecords().add(record);

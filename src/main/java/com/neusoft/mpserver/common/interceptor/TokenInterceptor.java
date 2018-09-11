@@ -1,8 +1,8 @@
 package com.neusoft.mpserver.common.interceptor;
 
-import com.neusoft.mpserver.dao.TokenRepository;
-import com.neusoft.mpserver.domain.Constant;
-import com.neusoft.mpserver.domain.Token;
+import com.neusoft.mpserver.sipo57.dao.TokenRepository;
+import com.neusoft.mpserver.sipo57.domain.Constant;
+import com.neusoft.mpserver.sipo57.domain.Token;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
