@@ -4,6 +4,7 @@ import com.neusoft.mpserver.common.domain.Pagination;
 import com.neusoft.mpserver.common.domain.Record;
 import com.neusoft.mpserver.common.domain.TrsResult;
 import com.neusoft.mpserver.common.engine.TrsEngine;
+import com.neusoft.mpserver.common.util.XmlFormatter;
 import com.neusoft.mpserver.jszkoffline.dao.CitedInfoRepository;
 import com.neusoft.mpserver.jszkoffline.service.CitedSearchService;
 import com.neusoft.mpserver.sipo57.domain.Constant;
@@ -44,16 +45,20 @@ public class CitedSearchServiceImpl implements CitedSearchService {
         //遍历结果集，到trs查询详细信息
         for(int i=0;i<searchResult.size();i++){
             Map<String,Object>  anAndCitedMap=new HashMap<String,Object>();
-             String apAn=searchResult.get(i)[1].toString().substring(0,searchResult.get(i)[1].toString().indexOf("."));
-            String citedAn=searchResult.get(i)[4] == null ?"" :searchResult.get(i)[4].toString() ;
-            String citedType=searchResult.get(i)[6] ==null ? "":searchResult.get(i)[6].toString() ;
-            String pIpc=searchResult.get(i)[7] == null ?"" :searchResult.get(i)[7].toString() ;
-            String cIpc=searchResult.get(i)[8] == null ?"" :searchResult.get(i)[8].toString() ;
+             String apoldAn=searchResult.get(i)[0].toString();
+             String apAn=searchResult.get(i)[0].toString().substring(0,searchResult.get(i)[0].toString().indexOf("."));
+            String citedAn=searchResult.get(i)[2] == null ?"" :searchResult.get(i)[2].toString() ;
+            String citedType=searchResult.get(i)[3] ==null ? "":searchResult.get(i)[3].toString() ;
+            String pIpc=searchResult.get(i)[4] == null ?"" :searchResult.get(i)[4].toString() ;
+            String cIpc=searchResult.get(i)[5] == null ?"" :searchResult.get(i)[5].toString() ;
+            String location=searchResult.get(i)[6] == null ?"" :searchResult.get(i)[6].toString() ;
             anAndCitedMap.put("an",apAn);
             anAndCitedMap.put("citedAn",citedAn);
             anAndCitedMap.put("citeType",citedType);
             anAndCitedMap.put("apIpc",pIpc);
             anAndCitedMap.put("cIpc",cIpc);
+            anAndCitedMap.put("location",location);
+            anAndCitedMap.put("apoldAn",apoldAn);
             anList.add(anAndCitedMap);
         }
         map.put("anList",anList);
@@ -106,11 +111,22 @@ public class CitedSearchServiceImpl implements CitedSearchService {
                 citeMap=temp;
             }
         }
-        patentBaseInfoMap.put("CLIMS",(selfMap.get("CLMS")).replaceAll("<[^>]+>","").replace("\n","@#"));
-        patentBaseInfoMap.put("DESC",(selfMap.get("DESC1")).replaceAll("<[^>]+>","").replace("\n","<div></div>").replace("技术领域<div></div>","<div class='desc-title' style='color:#409EFF'>技术领域</div>").replace("背景技术","<div class='desc-title' style='color:#409EFF'>背景技术</div>").replace("发明内容","<div class='desc-title' style='color:#409EFF'>发明内容</div>").replace("附图说明","<div class='desc-title' style='color:#409EFF'>附图说明</div>").replace("具体实施方式","<div class='desc-title' style='color:#409EFF'>具体实施方式</div>"));
-        citeBaseInfoMap.put("CLIMS",(citeMap.get("CLMS")).replaceAll("<[^>]+>","").replace("\n","@#"));
-        citeBaseInfoMap.put("DESC",(citeMap.get("DESC1")).replaceAll("<[^>]+>","").replace("\n","<div></div>").replace("技术领域","<div class='desc-title' style='color:#409EFF'>技术领域</div>").replace("背景技术","<div class='desc-title' style='color:#409EFF'>背景技术</div>").replace("发明内容","<div class='desc-title' style='color:#409EFF'>发明内容</div>").replace("附图说明","<div class='desc-title' style='color:#409EFF'>附图说明</div>").replace("具体实施方式","<div class='desc-title' style='color:#409EFF'>具体实施方式</div>"));
-        System.out.println((selfMap.get("CLMS")).replaceAll("<[^>]+>",""));
+        // String clms1=XmlFormatter.format(selfMap.get("CLMS"), XmlFormatter.XmlType.CLMS);
+        //String desc = XmlFormatter.format(selfMap.get("DESC1"), XmlFormatter.XmlType.DESC);
+        //String clm1new=XmlFormatter.getClms1(clms1);
+        //System.out.println("第一段权利要求为："+clm1new);
+        //System.out.println("技术领域为："+XmlFormatter.getPartOfDesc(desc, "背景技术"));
+
+
+        patentBaseInfoMap.put("CLIMS", XmlFormatter.format(selfMap.get("CLMS"), XmlFormatter.XmlType.CLMS));
+        patentBaseInfoMap.put("DESC", XmlFormatter.format(selfMap.get("DESC1"), XmlFormatter.XmlType.DESC));
+        citeBaseInfoMap.put("CLIMS", XmlFormatter.format(citeMap.get("CLMS"), XmlFormatter.XmlType.CLMS));
+        citeBaseInfoMap.put("DESC", XmlFormatter.format(citeMap.get("DESC1"), XmlFormatter.XmlType.DESC));
+
+        //patentBaseInfoMap.put("CLIMS",(selfMap.get("CLMS")).replaceAll("<[^>]+>","").replaceAll("(\\.|。|;|；)\n", "。<br/>").replace("\n",""));
+        // patentBaseInfoMap.put("DESC",(selfMap.get("DESC1")).replaceAll("<[^>]+>","").replaceAll("(\\.|。|;|；)\n", "。<br/>").replace("\n","<span></span>").replace("技术领域<span></span>","<div class='desc-title' style='color:#409EFF'>技术领域</div>").replace("背景技术<span></span>","<div class='desc-title' style='color:#409EFF'>背景技术</div>").replace("发明内容<span></span>","<div class='desc-title' style='color:#409EFF'>发明内容</div>").replace("附图说明<span></span>","<div class='desc-title' style='color:#409EFF'>附图说明</div>").replace("具体实施方式<span></span>","<div class='desc-title' style='color:#409EFF'>具体实施方式</div>"));
+        //citeBaseInfoMap.put("CLIMS",(citeMap.get("CLMS")).replaceAll("<[^>]+>","").replaceAll("(\\.|。|;|；)\n", "。<br/>").replace("\n",""));
+        //citeBaseInfoMap.put("DESC",(citeMap.get("DESC1")).replaceAll("<[^>]+>","").replaceAll("(\\.|。|;|；)\n", "。<br/>").replace("\n","<span></span>").replace("技术领域<span></span>","<div class='desc-title' style='color:#409EFF'>技术领域</div>").replace("背景技术<span></span>","<div class='desc-title' style='color:#409EFF'>背景技术</div>").replace("发明内容<span></span>","<div class='desc-title' style='color:#409EFF'>发明内容</div>").replace("附图说明<span></span>","<div class='desc-title' style='color:#409EFF'>附图说明</div>").replace("具体实施方式<span></span>","<div class='desc-title' style='color:#409EFF'>具体实施方式</div>"));
         map.put("thispatentBaseInfo", patentBaseInfoMap);
         map.put("citepatentBaseInfo", citeBaseInfoMap);
         return map;
@@ -184,5 +200,11 @@ public class CitedSearchServiceImpl implements CitedSearchService {
         }
         return resultMap;
     }
+/*    public static void  main(String[] args) {
+        String str = ".\n \n daldfjalkd。\n";
+        System.out.println(str.replaceAll("(\\.|。)\n", "<br/>").replace("\n", ""));
+    }*/
+
+
 
 }

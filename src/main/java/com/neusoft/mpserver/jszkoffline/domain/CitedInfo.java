@@ -7,7 +7,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "uni_abs_patcit_cn_0905")
 public class CitedInfo {
-    @Id
+   @Id
     private Integer id;
     //申请号
     private String an;
