@@ -31,12 +31,13 @@ public class Constant {
     /*********** zhengchj ***********/
     public static final String CLMS="CLMS";
     public static final String DESC="DESC1";
+    public static final String AB="AB";
     public static final String GK_PN = "GK_PN";
-    public static final String GK_FIELDS = "GK_PA,GK_IN,GK_TI";
-    public static final String SQ_FIELDS = "SQ_PA,SQ_IN,SQ_TI";
+    public static final String GK_FIELDS = "GK_PA,GK_IN,GK_TI,GK_AB";
+    public static final String SQ_FIELDS = "SQ_PA,SQ_IN,SQ_TI,SQ_AB";
     public static final String GK_PREFIX = "GK_";
     public static final String SQ_PREFIX = "SQ_";
-    public static final String MAIN_FIELDS = "PA,IN,TI";
+    public static final String MAIN_FIELDS = "PA,IN,TI,AB";
     public static final String OTHER_FIELDS = "NRD_AN,CCODE,CNAME";
     public static final String IPC_DB = "IPC8";
     /************ fandp ****************/

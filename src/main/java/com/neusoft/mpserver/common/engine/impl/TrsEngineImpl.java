@@ -86,7 +86,7 @@ public class TrsEngineImpl implements TrsEngine {
                     Record record = new Record();
                     for (String f : fields) {
                         String r = "";
-                        if(f.equals(Constant.CLMS) || f.equals(Constant.DESC)){
+                        if(f.equals(Constant.CLMS) || f.equals(Constant.DESC) || f.equals(Constant.GK_PREFIX + Constant.AB) || f.equals(Constant.SQ_PREFIX + Constant.AB)){
                             InputStream is = result.getBinaryStream(f, 0);
                             if(is != null){
                                 r = IOUtils.toString(is, "UTF-8");

@@ -95,7 +95,7 @@ public class CitedSearchServiceImpl implements CitedSearchService {
                 citeBaseInfoMap=assembleData;
             }
         }
-        //查询权利要求及说明书
+        //查询权利要求及说明书,摘要
         condition1.setExp(searchAn);
         condition1.setDbName(Constant.CNTXT_DB);
         condition1.setDisplayFields(Constant.CLMS + "," + Constant.DESC + "," + Constant.CNTXT_AN);
