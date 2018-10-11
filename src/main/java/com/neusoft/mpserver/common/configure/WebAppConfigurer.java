@@ -28,9 +28,11 @@ public class WebAppConfigurer implements WebMvcConfigurer {
     }
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+
         //登录拦截
         List<String> urls = new ArrayList<String>();
         urls.add("/ipc/**");
+        urls.add("/electrical/**");
         urls.add("/address/**");
         urls.add("/user/logout");
         registry.addInterceptor(getTokenInterceptor()).addPathPatterns(urls);
