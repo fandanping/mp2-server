@@ -17,5 +17,7 @@ public interface ElectricalService {
     //保存标引词
     public boolean addMark(String userId, List<ElectrialTiMark> markList);
     //删除标引词
-    public boolean deleteMark(String markId, String userId);
+    public boolean deleteMark(List<ElectrialTiMark> list);
+    //查询标题拆词
+    public List showChaiCiList(String title);
 }

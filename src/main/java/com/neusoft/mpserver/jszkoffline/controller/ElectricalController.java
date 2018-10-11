@@ -68,12 +68,21 @@ public class ElectricalController {
     //删除标引词
     @PostMapping("/mark/delete")
     public Map<String,Object>  deleteMark(@RequestBody Map postMap,HttpServletRequest request){
-        String markId = (String) postMap.get("markId");
+        String marks = (String) postMap.get("marks");
+        Gson gson = new Gson();
+        ArrayList<ElectrialTiMark> markList = gson.fromJson(marks, new TypeToken<List<ElectrialTiMark>>(){}.getType());
         String userId = (String) request.getAttribute(Constant.USER_ID);
-        boolean flag= electricalService.deleteMark(markId,userId);
+        boolean flag= electricalService.deleteMark(markList);
         Map<String ,Object> map=new HashMap<String,Object>();
         map.put("flag",flag);
         return map;
+    }
+    //查询标题拆词
+    @GetMapping("/chaici/list/{ti}")
+    public Map<String, List> chaiciList (@PathVariable String ti){
+        Map<String, List> result = new HashMap<String, List>();
+        result.put("chaiCiList", electricalService.showChaiCiList(ti));
+        return result;
     }
 
 

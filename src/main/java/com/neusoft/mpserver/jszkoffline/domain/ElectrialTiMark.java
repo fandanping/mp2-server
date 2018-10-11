@@ -13,7 +13,7 @@ public class ElectrialTiMark {
     //id
     @Id
     private String id;
-    //类型：共四种类型，标题,权力要求
+    //类型：共2种类型，标题,权力要求
     //1:标题
     private String type;
     //用户id
@@ -24,5 +24,7 @@ public class ElectrialTiMark {
     private String word;
     //标引时间
     private String createTime;
+    //对比文献申请号
+    private String citedAn;
 
 }

@@ -16,4 +16,10 @@ public interface ElectrialMarkRepository  extends JpaRepository<ElectrialTiMark,
     @Query(value = "delete from ElectrialTiMark where id=?1 and userId=?2")
     public void deleteTiMarkByIdAndUserId(String id, String userId);
 
+    //保存标引词 一对一
+    @Transactional
+    @Modifying
+    @Query(value = "update ElectrialTiMark set word=?2 where an=?1")
+    public int saveMark(String an, String word);
+
 }

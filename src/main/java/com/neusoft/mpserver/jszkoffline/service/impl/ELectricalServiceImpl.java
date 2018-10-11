@@ -15,6 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import thk.analyzer.ThkAnalyzer;
+import thk.analyzer.Token;
+
 import javax.transaction.Transactional;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -53,10 +56,14 @@ public class ELectricalServiceImpl  implements ElectricalService {
             String an=searchResult.get(i)[0].toString().substring(0,searchResult.get(i)[0].toString().indexOf("."));
             String pIpcMain=searchResult.get(i)[2] == null ?"" :searchResult.get(i)[2].toString() ;
             String pn =searchResult.get(i)[3] == null ?"" :searchResult.get(i)[3].toString() ;
+            String referenceCategory =searchResult.get(i)[4] == null ?"" :searchResult.get(i)[4].toString() ;
+            String citedAn =searchResult.get(i)[5] == null ?"" :searchResult.get(i)[5].toString() ;
             patentListmap.put("oldan",oldAn);
             patentListmap.put("an",an);
             patentListmap.put("pIpcMain",pIpcMain);
             patentListmap.put("pn",pn);
+            patentListmap.put("referenceCategory",referenceCategory);
+            patentListmap.put("citedAn",citedAn);
             patentList.add(patentListmap);
         }
         map.put("patentList",patentList);
@@ -140,11 +147,28 @@ public class ELectricalServiceImpl  implements ElectricalService {
     @Override
     public List<ElectrialTiMark> showMarkList(String an) {
         List<ElectrialTiMark> markList = electrialMarkRepository.findTIMarkByAn(an);
-        return markList;
+        //增加一个案卷对应一行标引的记录 start
+        List<ElectrialTiMark> result =new ArrayList<ElectrialTiMark>();
+         for(int i=0;i<markList.size();i++){
+             String word=markList.get(i).getWord();
+             String[] wordarr = word.split(",");
+             for(int j=0;j<wordarr.length;j++){
+                 ElectrialTiMark el=new ElectrialTiMark();
+                 el.setWord(wordarr[j]);
+                 el.setUserId(markList.get(i).getUserId());
+                 el.setType(markList.get(i).getType());
+                 el.setId(markList.get(i).getId());
+                 el.setCreateTime(markList.get(i).getCreateTime());
+                 el.setAn(markList.get(i).getAn());
+                 result.add(el);
+             }
+         }
+        //end
+        return result;
     }
 
     /**
-     * 保存标引词
+     * 保存标引词  一对一
      * @param userId
      * @param markList
      * @return
@@ -153,52 +177,77 @@ public class ELectricalServiceImpl  implements ElectricalService {
     @Override
     public boolean addMark(String userId, List<ElectrialTiMark> markList) {
        List<ElectrialTiMark> markListResult = markList;
-   /*    String id=IDGenerator.generate();
+       String id=IDGenerator.generate();
        Date day = new Date();
        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
        String createTime=df.format(day);
        String usId=markListResult.get(0).getUserId();
        String type=markListResult.get(0).getType();
        String an=markListResult.get(0).getAn();
-       String word="";*/
+        String citedAn=markListResult.get(0).getCitedAn();
+       String word="";
         for (int i = 0; i < markListResult.size(); i++) {
-        /*    if(i==markListResult.size()-1){
+           if(i==markListResult.size()-1){
                 word += markListResult.get(i).getWord();
             }else{
                 word += markListResult.get(i).getWord()+",";
-            }*/
-            markListResult.get(i).setId(IDGenerator.generate());
-            Date day = new Date();
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            markListResult.get(i).setCreateTime(df.format(day));
+            }
         }
-     /*   List<ElectrialTiMark> result=new ArrayList<ElectrialTiMark>();
-        ElectrialTiMark electrialTiMarkResult=new ElectrialTiMark();
-        electrialTiMarkResult.setAn(an);
-        electrialTiMarkResult.setCreateTime(createTime);
-        electrialTiMarkResult.setId(id);
-        electrialTiMarkResult.setType(type);
-        electrialTiMarkResult.setUserId(usId);
-        electrialTiMarkResult.setWord(word);
-        result.add(electrialTiMarkResult);*/
-        if (electrialMarkRepository.saveAll(markListResult).isEmpty()) {
-            return false;
-        } else {
+       // String trsword="TI="+word;
+        List<ElectrialTiMark> list=new ArrayList<ElectrialTiMark>();
+        ElectrialTiMark el=new ElectrialTiMark();
+        el.setWord(word);
+        el.setUserId(usId);
+        el.setType(type);
+        el.setId(id);
+        el.setCreateTime(createTime);
+        el.setAn(an);
+        el.setCitedAn(citedAn);
+        list.add(el);
+        if(electrialMarkRepository.findTIMarkByAn(an).isEmpty()){
+            if (electrialMarkRepository.saveAll(list).isEmpty()) {
+                return false;
+            } else {
+                return true;
+            }
+        }else{
+            electrialMarkRepository.saveMark(an,word);
             return true;
+
         }
     }
 
     /**
      * 删除标引词
-     * @param markId
-     * @param userId
      * @return
      */
     @Transactional
     @Override
-    public boolean deleteMark(String markId, String userId) {
-        electrialMarkRepository.deleteTiMarkByIdAndUserId(markId, userId);
+    public boolean deleteMark(List<ElectrialTiMark> list1) {
+        List<ElectrialTiMark> markListResult = list1;
+        String an=markListResult.get(0).getAn();
+        String word="";
+        for (int i = 0; i < markListResult.size(); i++) {
+            if(i==markListResult.size()-1){
+                word += markListResult.get(i).getWord();
+            }else{
+                word += markListResult.get(i).getWord()+",";
+            }
+        }
+       // String trsword="TI="+word;
+        electrialMarkRepository.saveMark(an,word);
         return true;
+    }
+
+    @Override
+    public List showChaiCiList(String title) {
+        List result=new ArrayList();
+        try {
+            result= ThkAnalyzer.getInstance().analysis(title);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 
 }
