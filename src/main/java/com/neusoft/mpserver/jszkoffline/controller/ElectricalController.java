@@ -32,7 +32,7 @@ public class ElectricalController {
     //查询案卷申请号列表
     @GetMapping("/search/list")
     public Map<String, Object> searchPatentList( Pagination pagination, String token) {
-        Map<String, Object> patentMap = electricalService.searchPatentList(pagination);
+        Map<String, Object> patentMap = electricalService.searchCompareFilePatentList(pagination);
         return patentMap;
     }
 

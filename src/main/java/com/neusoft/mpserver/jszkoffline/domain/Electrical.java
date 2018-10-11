@@ -9,7 +9,7 @@ import javax.persistence.Table;
 
 @Data
 @Entity
-@Table(name = "fantest")
+@Table(name = "sipo_markvalidate")
 public class Electrical {
 
     @Id

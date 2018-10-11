@@ -37,6 +37,7 @@ public class ELectricalServiceImpl  implements ElectricalService {
      * @return
      */
     @Override
+    @Deprecated
     public Map<String, Object> searchPatentList(Pagination pagination) {
         Map<String, Object> map = new HashMap<String, Object>();
         List<Object[]> searchResult = new ArrayList<Object[]>();
@@ -71,6 +72,45 @@ public class ELectricalServiceImpl  implements ElectricalService {
         return map;
     }
 
+    /**
+     * 查询案卷列表
+     * @param pagination
+     * @return
+     */
+    @Override
+    public Map<String,Object> searchCompareFilePatentList(Pagination pagination) {
+        Map<String, Object> map = new HashMap<String, Object>();
+        List<Object[]> searchResult = new ArrayList<Object[]>();
+        List<Map<String,Object>>  patentList=new ArrayList<Map<String,Object>>();
+        //查询total
+        int total=electrialRepository.findAnCount();
+        pagination.setTotal(total);
+        //获取分页信息，封装Pageable
+        int size=pagination.getSize();
+        int pageNumber = pagination.getStart() /size;
+        Pageable pageable = new PageRequest(pageNumber, size);
+        //查询列表
+        searchResult=electrialRepository.findByDetail(pageable);
+        for(int i=0;i<searchResult.size();i++){
+            Map<String,Object>  patentListmap=new HashMap<String,Object>();
+            String oldAn=searchResult.get(i)[0].toString();
+            String an=searchResult.get(i)[0].toString().substring(0,searchResult.get(i)[0].toString().indexOf("."));
+            String pIpcMain=searchResult.get(i)[2] == null ?"" :searchResult.get(i)[2].toString() ;
+            String pn =searchResult.get(i)[3] == null ?"" :searchResult.get(i)[3].toString() ;
+            String referenceCategory =searchResult.get(i)[4] == null ?"" :searchResult.get(i)[4].toString() ;
+            String citedAn =searchResult.get(i)[5] == null ?"" :searchResult.get(i)[5].toString() ;
+            patentListmap.put("oldan",oldAn);
+            patentListmap.put("an",an);
+            patentListmap.put("pIpcMain",pIpcMain);
+            patentListmap.put("pn",pn);
+            patentListmap.put("referenceCategory",referenceCategory);
+            patentListmap.put("citedAn",citedAn);
+            patentList.add(patentListmap);
+        }
+        map.put("patentList",patentList);
+        map.put("pagination",pagination);
+        return map;
+    }
     /**
      * 查询案卷详细信息
      * @param an
