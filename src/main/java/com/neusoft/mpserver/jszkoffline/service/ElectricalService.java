@@ -17,7 +17,7 @@ public interface ElectricalService {
     public Map<String,Object> searchPatentDetailInfo(String an);
 
     //查询标引词
-    public List<ElectrialTiMark> showMarkList(String an);
+    public List<ElectrialTiMark> showMarkList(String an, String userId);
     //保存标引词
     public boolean addMark(String userId, List<ElectrialTiMark> markList);
     //删除标引词

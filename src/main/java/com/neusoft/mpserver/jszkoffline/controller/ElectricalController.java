@@ -46,9 +46,10 @@ public class ElectricalController {
 
     //查询显示标引词
     @GetMapping("/list/{an}")
-    public Map<String, List<ElectrialTiMark>> markList (@PathVariable String an){
+    public Map<String, List<ElectrialTiMark>> markList (@PathVariable String an, HttpServletRequest request){
         Map<String, List<ElectrialTiMark>> result = new HashMap<String, List<ElectrialTiMark>>();
-        result.put("markTiList", electricalService.showMarkList(an));
+        String userId = (String) request.getAttribute(Constant.USER_ID);
+        result.put("markTiList", electricalService.showMarkList(an, userId));
         return result;
     }
 

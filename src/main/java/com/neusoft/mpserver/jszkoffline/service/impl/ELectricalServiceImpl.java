@@ -185,23 +185,27 @@ public class ELectricalServiceImpl  implements ElectricalService {
      */
     @Transactional
     @Override
-    public List<ElectrialTiMark> showMarkList(String an) {
+    public List<ElectrialTiMark> showMarkList(String an, String userId) {
         List<ElectrialTiMark> markList = electrialMarkRepository.findTIMarkByAn(an);
         //增加一个案卷对应一行标引的记录 start
         List<ElectrialTiMark> result =new ArrayList<ElectrialTiMark>();
+        if(markList.size() == 0){
+            ElectrialTiMark mark = new ElectrialTiMark();
+            mark.setType("1");
+            mark.setWord("");
+            mark.setUserId(userId);
+            result.add(mark);
+            return result;
+        }
          for(int i=0;i<markList.size();i++){
-             String word=markList.get(i).getWord();
-             String[] wordarr = word.split(",");
-             for(int j=0;j<wordarr.length;j++){
                  ElectrialTiMark el=new ElectrialTiMark();
-                 el.setWord(wordarr[j]);
+                 el.setWord(markList.get(i).getWord());
                  el.setUserId(markList.get(i).getUserId());
                  el.setType(markList.get(i).getType());
                  el.setId(markList.get(i).getId());
                  el.setCreateTime(markList.get(i).getCreateTime());
                  el.setAn(markList.get(i).getAn());
                  result.add(el);
-             }
          }
         //end
         return result;
