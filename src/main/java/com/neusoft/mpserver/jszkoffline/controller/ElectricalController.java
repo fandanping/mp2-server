@@ -45,11 +45,11 @@ public class ElectricalController {
     }
 
     //查询显示标引词
-    @GetMapping("/list/{an}")
-    public Map<String, List<ElectrialTiMark>> markList (@PathVariable String an, HttpServletRequest request){
+    @GetMapping("/list/{an}/{citedAn}")
+    public Map<String, List<ElectrialTiMark>> markList (@PathVariable String an,@PathVariable String citedAn, HttpServletRequest request){
         Map<String, List<ElectrialTiMark>> result = new HashMap<String, List<ElectrialTiMark>>();
         String userId = (String) request.getAttribute(Constant.USER_ID);
-        result.put("markTiList", electricalService.showMarkList(an, userId));
+        result.put("markTiList", electricalService.showMarkList(an,citedAn, userId));
         return result;
     }
 

@@ -180,14 +180,14 @@ public class ELectricalServiceImpl  implements ElectricalService {
 
     /**
      * 查询标引词
-     * @param an
+     * @param
      * @return
      */
     @Transactional
     @Override
-    public List<ElectrialTiMark> showMarkList(String an, String userId) {
-        List<ElectrialTiMark> markList = electrialMarkRepository.findTIMarkByAn(an);
-        //增加一个案卷对应一行标引的记录 start
+    public List<ElectrialTiMark> showMarkList(String an,String citedAn, String userId) {
+        List<ElectrialTiMark> markList = electrialMarkRepository.findByAnAAndCitedAn(an,citedAn);
+        //增加一个案卷对应一行标引的记录 startId
         List<ElectrialTiMark> result =new ArrayList<ElectrialTiMark>();
         if(markList.size() == 0){
             ElectrialTiMark mark = new ElectrialTiMark();
@@ -248,14 +248,14 @@ public class ELectricalServiceImpl  implements ElectricalService {
         el.setAn(an);
         el.setCitedAn(citedAn);
         list.add(el);
-        if(electrialMarkRepository.findTIMarkByAn(an).isEmpty()){
+        if(electrialMarkRepository.findByAnAAndCitedAn(an,citedAn).isEmpty()){
             if (electrialMarkRepository.saveAll(list).isEmpty()) {
                 return false;
             } else {
                 return true;
             }
         }else{
-            electrialMarkRepository.saveMark(an,word);
+            electrialMarkRepository.saveMark(an,citedAn,word);
             return true;
 
         }
@@ -270,6 +270,7 @@ public class ELectricalServiceImpl  implements ElectricalService {
     public boolean deleteMark(List<ElectrialTiMark> list1) {
         List<ElectrialTiMark> markListResult = list1;
         String an=markListResult.get(0).getAn();
+        String citedAn=markListResult.get(0).getCitedAn();
         String word="";
         for (int i = 0; i < markListResult.size(); i++) {
             if(i==markListResult.size()-1){
@@ -279,7 +280,7 @@ public class ELectricalServiceImpl  implements ElectricalService {
             }
         }
        // String trsword="TI="+word;
-        electrialMarkRepository.saveMark(an,word);
+        electrialMarkRepository.saveMark(an,citedAn,word);
         return true;
     }
 
