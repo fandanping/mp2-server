@@ -228,7 +228,7 @@ public class ELectricalServiceImpl  implements ElectricalService {
        String usId=markListResult.get(0).getUserId();
        String type=markListResult.get(0).getType();
        String an=markListResult.get(0).getAn();
-        String citedAn=markListResult.get(0).getCitedAn();
+       String citedAn=markListResult.get(0).getCitedAn();
        String word="";
         for (int i = 0; i < markListResult.size(); i++) {
            if(i==markListResult.size()-1){
