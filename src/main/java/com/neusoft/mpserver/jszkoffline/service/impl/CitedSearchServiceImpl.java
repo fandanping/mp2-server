@@ -42,7 +42,6 @@ public class CitedSearchServiceImpl implements CitedSearchService {
         int pageNumber = pagination.getStart() /size;
         Pageable pageable = new PageRequest(pageNumber, size);
         searchResult=citedInfoRepository.findByIpcMain(ipc,pageable);
-        //遍历结果集，到trs查询详细信息
         for(int i=0;i<searchResult.size();i++){
             Map<String,Object>  anAndCitedMap=new HashMap<String,Object>();
              String apoldAn=searchResult.get(i)[0].toString();
