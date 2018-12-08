@@ -64,6 +64,8 @@ public class TrsEngineImpl implements TrsEngine {
             conn = createConnection();
             result = TRSSearch.executeSelect(conn, condition.getDbName(), condition.getExp(),
                     "", "", "BI", TRSConstant.TCM_IDEOSINGLE | TRSConstant.TCM_LIFOSPARE, TRSConstant.TCE_NOTHIT, false);
+           //降序排列
+            result.sortResult("-"+condition.getSortFields(),true);
             result.setReadOption("READOPTION", null, TRSConstant.TCM_BAN64KFILE);
             result.setCutSize(0, true);
             result.setReadOptions(TRSConstant.TCE_NOTHIT, condition.getDisplayFields(), ",");

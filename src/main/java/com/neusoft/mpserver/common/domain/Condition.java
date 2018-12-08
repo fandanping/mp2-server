@@ -24,4 +24,8 @@ public class Condition implements Serializable {
      * 检索库
      */
     private String dbName;
+    /**
+     * 排序字段
+     */
+    private String sortFields;
 }

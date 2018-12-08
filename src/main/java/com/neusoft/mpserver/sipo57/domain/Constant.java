@@ -43,4 +43,7 @@ public class Constant {
     /************ fandp ****************/
     public static final String USER_ID = "user_id";
     public static final String NO_IPC = "0";
+    public static final String GK_TI="GK_TI";
+    public static final String PD="PD";
+    public static final String IPC_MAIN="IPC_MAIN";
 }
