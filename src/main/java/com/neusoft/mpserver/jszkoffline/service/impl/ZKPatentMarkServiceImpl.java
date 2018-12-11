@@ -6,15 +6,15 @@ import com.neusoft.mpserver.common.domain.Pagination;
 import com.neusoft.mpserver.common.domain.Record;
 import com.neusoft.mpserver.common.domain.TrsResult;
 import com.neusoft.mpserver.common.engine.TrsEngine;
+import com.neusoft.mpserver.common.util.JedisPoolUtil;
 import com.neusoft.mpserver.common.util.XmlFormatter;
 import com.neusoft.mpserver.jszkoffline.domain.ZKPatentMark;
 import com.neusoft.mpserver.jszkoffline.service.ZKPatentMarkService;
 import com.neusoft.mpserver.sipo57.domain.Constant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisCluster;
 import thk.analyzer.ThkAnalyzer;
-
 import java.util.*;
 
 /**
@@ -23,9 +23,9 @@ import java.util.*;
 @Service
 public class ZKPatentMarkServiceImpl implements ZKPatentMarkService {
     @Autowired
-    private TrsEngine trsEngine;
+    private  TrsEngine trsEngine;
     /**
-     * trs查询CNABS库公开日在6月份-九月份 ,排除外观，按照公开日降序，分页查询，返回想要展示的字段信息
+     * trs查询CNABS库公开日在6月份-九月份 ,排除外观，按照公开日降序，分页查询，返回想要展示的字段信息（标题 摘要 公开日 ）
      * @param pagination
      * @return
      */
@@ -41,6 +41,8 @@ public class ZKPatentMarkServiceImpl implements ZKPatentMarkService {
         condition.setDbName(Constant.CNABS_DB);
         //显示字段 :申请号 标题 公开日 主分类
         condition.setDisplayFields(Constant.CNTXT_AN + "," + Constant.GK_TI+","+Constant.PD+","+Constant.IPC_MAIN+","+Constant.GK_PN+","+Constant.GK_FIELDS+","+ Constant.SQ_FIELDS + "," + Constant.OTHER_FIELDS);
+        //排序:降序
+        condition.setSortFields("-"+"pd");
         //分页查询
         Pagination page=new Pagination();
         page.setStart(pagination.getStart());
@@ -51,16 +53,20 @@ public class ZKPatentMarkServiceImpl implements ZKPatentMarkService {
         List<Record> recordList = tr.getRecords();
         //结果集记录数
         int resultSize = recordList.size();
+        //查询结果集总数
+        //System.out.println("计数"+ tr.getPagination().getTotal());
         //封装返回结果集
         Map<String, String> patentInfoMap= new HashMap<String,String>();
         for(int i=0;i<resultSize;i++){
             Map<String, String> assembleData=AssembleData(recordList.get(i).getDataMap());
             patentList.add(assembleData);
         }
+        pagination.setTotal(tr.getPagination().getTotal());
         map.put("zkPatentListResult",patentList);
         map.put("pagination",pagination);
         return map;
     }
+
     /**
      * 默认取GK（公开）字段数据，若为空，则取SQ（授权）字段数据
      *
@@ -91,6 +97,11 @@ public class ZKPatentMarkServiceImpl implements ZKPatentMarkService {
         return resultMap;
     }
 
+    /**
+     * trs查询权利要求，说明书：传入案卷号an,到CNTXT库查询权力要求，调用拆词接口，查询权利要求拆词参考
+     * @param an
+     * @return
+     */
     @Override
     public Map<String, Object> searchZKPatentDetailInfo(String an) {
         Map<String,Object> map=new HashMap<String,Object>();
@@ -151,42 +162,40 @@ public class ZKPatentMarkServiceImpl implements ZKPatentMarkService {
         Gson gson=new Gson();
         List<ZKPatentMark> zkPatentMarkList=markList;
         String an=zkPatentMarkList.get(0).getAn();
-        Jedis jedis = new Jedis("localhost",6379);
-        Map<String,String> tiMarkMap=new HashMap<String,String>();
-        Map<String,String> clmsMarkMap=new HashMap<String,String>();
+        JedisCluster jedis = JedisPoolUtil.getJedis();
+        Map<String,String> markMap=new HashMap<String,String>();
         String timark ="";
         String clmsmark ="";
         for(int i=0;i<zkPatentMarkList.size();i++){
             ZKPatentMark item=zkPatentMarkList.get(i);
             String  type=item.getType();
            if(type.equals("1")){
-               timark = item.getWord()+",";
+               timark += item.getWord()+",";
            }else if(type.equals("2")){
-               clmsmark = item.getWord()+",";
+               clmsmark += item.getWord()+",";
            }
         }
-        String timarkResult=timark.substring(0,timark.length()-1);
-        if(timarkResult !=""){
-            tiMarkMap.put("an",zkPatentMarkList.get(0).getAn());
-            tiMarkMap.put("type","1");
-            tiMarkMap.put("word",timarkResult);
-            System.out.println(gson.toJson(tiMarkMap));
-            jedis.set(an+"|"+1, gson.toJson(tiMarkMap));
+        if(timark.length()!=0){
+            String timarkResult=timark.substring(0,timark.length()-1);
+            markMap.put("zkTiWord",timarkResult);
+        }else{
+            markMap.put("zkTiWord","");
         }
-        if(clmsmark !=""){
-            String clmsmarkResult=timark.substring(0,clmsmark.length()-1);
-            clmsMarkMap.put("an",zkPatentMarkList.get(0).getAn());
-            clmsMarkMap.put("type","2");
-            tiMarkMap.put("word",clmsmarkResult);
-            jedis.set(an+"|"+2, gson.toJson(clmsMarkMap));
+        if(clmsmark.length()!=0){
+            String clmsmarkResult=clmsmark.substring(0,clmsmark.length()-1);
+            markMap.put("zkClmsWord",clmsmarkResult);
+        }else{
+            markMap.put("zkClmsWord","");
         }
-        //map中的全部键值
-        System.out.println(jedis.get(an+"|"+1) );
+        markMap.put("zkAn",zkPatentMarkList.get(0).getAn());
+        jedis.set("zk"+an, gson.toJson(markMap));
+        //JedisPoolUtil.closeJedis(jedis);
         return true;
     }
 
     /**
      * 查询显示标引词
+     * 到redis查询
      * @param an
      * @return
      */
@@ -194,32 +203,35 @@ public class ZKPatentMarkServiceImpl implements ZKPatentMarkService {
     public List<ZKPatentMark> showMarkList(String an) {
         Gson gson=new Gson();
         List<ZKPatentMark> list=new ArrayList<ZKPatentMark>();
-        Jedis jedis = new Jedis("localhost",6379);
-        String tiMark=jedis.get(an+"|"+1);
-        Map tiMarkMap=gson.fromJson(tiMark,Map.class);
-        String clmsMark=jedis.get(an+"|"+2);
-        Map clmsMarkMap=gson.fromJson(clmsMark,Map.class);
-        if(tiMarkMap!=null){
-           String[] ti=tiMarkMap.get("word").toString().split(",");
-           for(int i=0;i<ti.length;i++){
-               ZKPatentMark mark=new ZKPatentMark();
-               mark.setAn(tiMarkMap.get("an").toString());
-               mark.setType(tiMarkMap.get("type").toString());
-               mark.setWord(ti[i]);
-               System.out.println(ti[i]);
-               list.add(mark);
-           }
-        }
-        if(clmsMarkMap!=null){
-            String[] clms=clmsMarkMap.get("word").toString().split(",");
-            for(int i=0;i<clms.length;i++){
-                ZKPatentMark mark=new ZKPatentMark();
-                mark.setAn(clmsMarkMap.get("an").toString());
-                mark.setType(clmsMarkMap.get("type").toString());
-                mark.setWord(clms[i]);
-                list.add(mark);
+        JedisCluster jedis = JedisPoolUtil.getJedis();
+        String mark=jedis.get("zk"+an);
+        Map markMap=gson.fromJson(mark,Map.class);
+        if(markMap!=null){
+            String tiMarkWord=markMap.get("zkTiWord").toString();
+            String clmsMarkWord=markMap.get("zkClmsWord").toString();
+            String zkAn=markMap.get("zkAn").toString();
+            if(tiMarkWord.length()!=0){
+                String[] ti=tiMarkWord.split(",");
+                for(int i=0;i<ti.length;i++){
+                    ZKPatentMark timark=new ZKPatentMark();
+                    timark.setAn(zkAn);
+                    timark.setType("1");
+                    timark.setWord(ti[i]);
+                    list.add(timark);
+                }
+            }
+            if(clmsMarkWord.length()!=0){
+                String[] clms=clmsMarkWord.split(",");
+                for(int i=0;i<clms.length;i++){
+                    ZKPatentMark clmsmark=new ZKPatentMark();
+                    clmsmark.setAn(zkAn);
+                    clmsmark.setType("2");
+                    clmsmark.setWord(clms[i]);
+                    list.add(clmsmark);
+                }
             }
         }
+        //JedisPoolUtil.closeJedis(jedis);
         return list;
     }
 
