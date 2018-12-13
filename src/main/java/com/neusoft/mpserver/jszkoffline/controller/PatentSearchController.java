@@ -1,13 +1,19 @@
 package com.neusoft.mpserver.jszkoffline.controller;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.neusoft.mpserver.common.domain.Pagination;
+import com.neusoft.mpserver.jszkoffline.domain.ZKPatentMark;
 import com.neusoft.mpserver.jszkoffline.service.PatentSearchService;
+import com.neusoft.mpserver.sipo57.domain.Constant;
+import com.neusoft.mpserver.sipo57.domain.IpcMark;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,5 +46,42 @@ public class PatentSearchController {
 
         return patentMap;
     }
+    /**
+     * 根据案卷号 ，到redis中查词
+     *
+     * @param an      案卷号
+     * @param request 用于获取用户id
+     * @return 返回一条记录
+     */
+    @GetMapping("/keyword/search/{an}/{citedAn}")
+    public Map<String, List<ZKPatentMark>> searchZKMarkKeywordList(@PathVariable String an,@PathVariable String citedAn, HttpServletRequest request) {
+        Map<String, List<ZKPatentMark>> result = new HashMap<String, List<ZKPatentMark>>();
+        result.put("patentMarkList", patentSearchService.showMarkList(an));
+        result.put("citedPatentMarkList", patentSearchService.showMarkList(citedAn));
+        return result;
+    }
+    /**
+     * 保存标引词：一个案卷的词是一个以，分割的字符串
+     *
+     * @param postMap 单个字符串
+     * @param request
+     * @return
+     */
+    @PostMapping("/keyword/save")
+    public Map<String, Object> saveZKMarkKeyword(@RequestBody Map postMap, HttpServletRequest request) {
+        Gson gson = new Gson();
+        String markStr = (String) postMap.get("markList");
+        ArrayList<IpcMark> markList = gson.fromJson(markStr, new TypeToken<List<ZKPatentMark>>(){}.getType());
+        String citedmarkStr = (String) postMap.get("citedMarkList");
+        ArrayList<IpcMark> citedMarkList = gson.fromJson(citedmarkStr, new TypeToken<List<ZKPatentMark>>(){}.getType());
+        String userId = (String) request.getAttribute(Constant.USER_ID);
+        boolean flagPatent=patentSearchService.addMark(userId,markList);
+        boolean flagCited=patentSearchService.addMark(userId,citedMarkList);
+        Map<String ,Object> map=new HashMap<String,Object>();
+        map.put("flag",flagPatent && flagCited);
+        return map;
+    }
+
+
 
 }

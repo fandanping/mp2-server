@@ -1,7 +1,9 @@
 package com.neusoft.mpserver.jszkoffline.service;
 
 import com.neusoft.mpserver.common.domain.Pagination;
+import com.neusoft.mpserver.jszkoffline.domain.ZKPatentMark;
 
+import java.util.List;
 import java.util.Map;
 
 public interface PatentSearchService {
@@ -11,4 +13,8 @@ public interface PatentSearchService {
     public Map<String,Object> searchPatentDetailInfo(String an, String citedAn);
     //查询申请专利和对比文献的详细信息
     public Map<String,Object> searchPatentDetailInfoNoCite(String an);
+    //查询标引词
+    public List<ZKPatentMark> showMarkList(String an);
+    //保存标引词
+    public boolean addMark(String userId, List markList);
 }
