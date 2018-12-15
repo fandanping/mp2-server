@@ -17,4 +17,6 @@ public interface PatentSearchService {
     public List<ZKPatentMark> showMarkList(String an);
     //保存标引词
     public boolean addMark(String userId, List markList);
+    //查询一段文本拆词后词几频率
+    public List<ZKPatentMark> searchSortByKeywordFreqsList(String  text);
 }

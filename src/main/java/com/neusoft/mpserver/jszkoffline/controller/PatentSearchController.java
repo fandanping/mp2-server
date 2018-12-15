@@ -81,7 +81,16 @@ public class PatentSearchController {
         map.put("flag",flagPatent && flagCited);
         return map;
     }
-
+    /**
+     * 输入一段文本，返回文本拆词及次数
+     */
+    @PostMapping("/keyword/searchTextKeyword")
+    public Map<String, List<ZKPatentMark>> searchSortByKeywordFreqsList(@RequestBody Map postMap, HttpServletRequest request) {
+        Map<String, List<ZKPatentMark>> result = new HashMap<String, List<ZKPatentMark>>();
+        String text = (String) postMap.get("text");
+        result.put("sortByKeywordFreqsList", patentSearchService.searchSortByKeywordFreqsList(text));
+        return result;
+    }
 
 
 }

@@ -14,7 +14,6 @@ import com.neusoft.mpserver.jszkoffline.dao.PatentRepository;
 import com.neusoft.mpserver.jszkoffline.domain.ZKPatentMark;
 import com.neusoft.mpserver.jszkoffline.service.PatentSearchService;
 import com.neusoft.mpserver.sipo57.domain.Constant;
-import org.apache.commons.collections.ListUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,11 +23,10 @@ import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPool;
 import thk.analyzer.ThkAnalyzer;
 import thk.analyzer.Token;
-
 import java.util.*;
 
 /**
- * 查询申请案卷及对比文献的详细信息
+ * 查询申请案卷及对比文献的基本信息：数据库中查询（uni_abs_patcit_cn_0905 jszk_0826）
  */
 @Service
 public class PatentSearchServiceImpl implements PatentSearchService {
@@ -37,11 +35,16 @@ public class PatentSearchServiceImpl implements PatentSearchService {
     @Autowired
     private PatentRepository patentRepository;
 
+    /**
+     *1.查询案卷列表：数据库查询
+     * @param pagination 分页对象
+     * @return 分页对象+案卷列表（本案卷申请号，对比案卷申请号，对比案卷类型，apIpc,cIpc,location）
+     */
     @Override
     public Map<String, Object> searchPatentList(Pagination pagination) {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> resultMap = new HashMap<String, Object>();
         List<Object[]> searchResult = new ArrayList<Object[]>();
-        List<Map<String,Object>>  anList=new ArrayList<Map<String,Object>>();
+        List<Map<String,Object>>  patentList=new ArrayList<Map<String,Object>>();
         //查询total
         int total=patentRepository.findAnCount();
         pagination.setTotal(total);
@@ -49,121 +52,125 @@ public class PatentSearchServiceImpl implements PatentSearchService {
         int size=pagination.getSize();
         int pageNumber = pagination.getStart() /size;
         Pageable pageable = new PageRequest(pageNumber, size);
+        //查询结果集
         searchResult=patentRepository.findPatentList(pageable);
+        //遍历结果集，封装返回案卷列表
         for(int i=0;i<searchResult.size();i++){
-            Map<String,Object>  anAndCitedMap=new HashMap<String,Object>();
-            String apoldAn=searchResult.get(i)[0].toString();
-            String apAn=searchResult.get(i)[0].toString().substring(0,searchResult.get(i)[0].toString().indexOf("."));
-            String citedAn=searchResult.get(i)[2] == null ?"" :searchResult.get(i)[2].toString() ;
-            String citedType=searchResult.get(i)[3] ==null ? "":searchResult.get(i)[3].toString() ;
-            String pIpc=searchResult.get(i)[4] == null ?"" :searchResult.get(i)[4].toString() ;
-            String cIpc=searchResult.get(i)[5] == null ?"" :searchResult.get(i)[5].toString() ;
-            String location=searchResult.get(i)[6] == null ?"" :searchResult.get(i)[6].toString() ;
-            anAndCitedMap.put("an",apAn);
-            anAndCitedMap.put("citedAn",citedAn);
-            anAndCitedMap.put("citeType",citedType);
-            anAndCitedMap.put("apIpc",pIpc);
-            anAndCitedMap.put("cIpc",cIpc);
-            anAndCitedMap.put("apoldAn",apoldAn);
-            anAndCitedMap.put("location",location);
-            anList.add(anAndCitedMap);
+            Object[] itemRestlt = searchResult.get(i);
+            Map<String,Object>  temporaryMap=new HashMap<String,Object>();
+            temporaryMap.put("an",itemRestlt[0].toString().substring(0,searchResult.get(i)[0].toString().indexOf(".")));
+            temporaryMap.put("citedAn",itemRestlt[2] == null ?"" :searchResult.get(i)[2].toString());
+            temporaryMap.put("citeType",itemRestlt[3] ==null ? "":searchResult.get(i)[3].toString());
+            temporaryMap.put("apIpc",itemRestlt[4] == null ?"" :searchResult.get(i)[4].toString());
+            temporaryMap.put("cIpc",itemRestlt[5] == null ?"" :searchResult.get(i)[5].toString());
+            temporaryMap.put("apoldAn",itemRestlt[0].toString());
+            temporaryMap.put("location",itemRestlt[6] == null ?"" :searchResult.get(i)[6].toString());
+            patentList.add(temporaryMap);
         }
-        map.put("anList",anList);
-        map.put("pagination",pagination);
-        return map;
+        resultMap.put("anList",patentList);
+        resultMap.put("pagination",pagination);
+        return resultMap;
     }
 
     /**
-     * 查询申请专利和对比文献专利的详细信息
+     * 查询申请专利和对比文献专利的详细信息：查询trs （标题 发明人 申请人 国省代码 权利要求 说明书 摘要）
      * @param an
      * @param citedAn
      * @return
      */
     @Override
     public Map<String, Object> searchPatentDetailInfo(String an, String citedAn) {
-        Map<String, Object> map = new HashMap<String, Object>();
-        Map<String, String> patentBaseInfoMap= new HashMap<String,String>();
-        Map<String, String> citeBaseInfoMap= new HashMap<String,String>();
-        Condition condition = new Condition();
-        Condition condition1 = new Condition();
+        Map<String, Object> resultmMap = new HashMap<String, Object>();
+        Map<String, String> patentInfoMap= new HashMap<String,String>();
+        Map<String, String> citeInfoMap= new HashMap<String,String>();
+        //1.到CNABS库中查询标题，申请人，发明人，国省代码等
+        //1.1 设置trs CNABS 查询条件字段
+        Condition conditionCNABS = new Condition();
         String searchAn = "nrd_an=('" + an + "' or '"+citedAn+"')";//nrd_an=( 'CN201510493315' or 'CN01128416')
-        condition.setExp(searchAn);
-        condition.setDbName(Constant.CNABS_DB);
-        condition.setDisplayFields(Constant.GK_PN + "," + Constant.GK_FIELDS + "," + Constant.SQ_FIELDS + "," + Constant.OTHER_FIELDS);
-        TrsResult tr = trsEngine.search(condition);
+        conditionCNABS.setExp(searchAn);
+        conditionCNABS.setDbName(Constant.CNABS_DB);
+        conditionCNABS.setDisplayFields(Constant.GK_PN + "," + Constant.GK_FIELDS + "," + Constant.SQ_FIELDS + "," + Constant.OTHER_FIELDS);
+        //1.2 查询
+        TrsResult tr = trsEngine.search(conditionCNABS);
+        //1.3 获取结果集
         List<Record> recordList = tr.getRecords();
         int size = recordList.size();
         for(int i=0;i<size;i++){
             Map<String, String> assembleData=AssembleData(recordList.get(i).getDataMap());
             if(assembleData.get("NRD_AN").equals(an)){
-                patentBaseInfoMap=assembleData;
+                patentInfoMap=assembleData;
             }else if(assembleData.get("NRD_AN").equals(citedAn)){
-                citeBaseInfoMap=assembleData;
+                citeInfoMap=assembleData;
             }
         }
-        String patentTi= patentBaseInfoMap.get("TI");
-        String patentCitedTi=citeBaseInfoMap.get("TI");
-        //查询权利要求及说明书,摘要
-        condition1.setExp(searchAn);
-        condition1.setDbName(Constant.CNTXT_DB);
-        condition1.setDisplayFields(Constant.CLMS + "," + Constant.DESC + "," + Constant.CNTXT_AN);
-        TrsResult tr1 = trsEngine.search(condition1);
+        String patentTi= patentInfoMap.get("TI");
+        String patentCitedTi=citeInfoMap.get("TI");
+        //2. 查询权利要求及说明书：CNTXT
+        //2.1 设置trs CNABS 查询条件字段
+        Condition conditionCNTXT = new Condition();
+        conditionCNTXT.setExp(searchAn);
+        conditionCNTXT.setDbName(Constant.CNTXT_DB);
+        conditionCNTXT.setDisplayFields(Constant.CLMS + "," + Constant.DESC + "," + Constant.CNTXT_AN);
+        //2.2 查询
+        TrsResult tr1 = trsEngine.search(conditionCNTXT);
+        //2.3 获取结果集
         List<Record> recordList1 = tr1.getRecords();
-        Map<String, String> selfMap=new HashMap<String,String>();
-        Map<String, String> citeMap=new HashMap<String,String>();
+        Map<String, String> selfTemporaryMap=new HashMap<String,String>();
+        Map<String, String> citeTemporaryMap=new HashMap<String,String>();
         for(int i=0;i<recordList1.size();i++){
             Map<String, String> temp=recordList1.get(i).getDataMap();
             if(temp.get("NRD_AN").equals(an)){
-                selfMap=temp;
+                selfTemporaryMap=temp;
             }else if(temp.get("NRD_AN").equals(citedAn)){
-                citeMap=temp;
+                citeTemporaryMap=temp;
             }
         }
-        String patentCLMS= XmlFormatter.format(selfMap.get("CLMS"), XmlFormatter.XmlType.CLMS);
-        String patentDESC=XmlFormatter.format(selfMap.get("DESC1"), XmlFormatter.XmlType.DESC);
-        String citedCLMS=XmlFormatter.format(citeMap.get("CLMS"), XmlFormatter.XmlType.CLMS);
-        String citedDESC=XmlFormatter.format(citeMap.get("DESC1"), XmlFormatter.XmlType.DESC);
-        patentBaseInfoMap.put("CLIMS", patentCLMS);
-        patentBaseInfoMap.put("DESC", patentDESC);
-        citeBaseInfoMap.put("CLIMS", citedCLMS);
-        citeBaseInfoMap.put("DESC", citedDESC);
-        //权利要求和说明书拆词和标题
-        List patentChaiCiTi=new ArrayList();
-        List citedChaiCiTi=new ArrayList();
-        List patentCLMSChaiCiTi=new ArrayList();
-        List patentDESCChaiCiTi=new ArrayList();
-        List citedCLMSChaiCiTi=new ArrayList();
-        List citedDESCChaiCiTi=new ArrayList();
+        //2.4 格式化权利要求和说明书（去除多余标签）
+        String patentCLMS= XmlFormatter.format(selfTemporaryMap.get("CLMS"), XmlFormatter.XmlType.CLMS);
+        String patentDESC=XmlFormatter.format(selfTemporaryMap.get("DESC1"), XmlFormatter.XmlType.DESC);
+        String citedCLMS=XmlFormatter.format(citeTemporaryMap.get("CLMS"), XmlFormatter.XmlType.CLMS);
+        String citedDESC=XmlFormatter.format(citeTemporaryMap.get("DESC1"), XmlFormatter.XmlType.DESC);
+        //2.5 封装到map中
+        patentInfoMap.put("CLIMS", patentCLMS);
+        patentInfoMap.put("DESC", patentDESC);
+        citeInfoMap.put("CLIMS", citedCLMS);
+        citeInfoMap.put("DESC", citedDESC);
+        //4. 封装返回对象
+        resultmMap.put("thispatentBaseInfo", patentInfoMap);
+        resultmMap.put("citepatentBaseInfo", citeInfoMap);
+        //3. 标题，权利要求，说明书调用拆词接口进行拆词,并将返回的集合排序并封装返回map
         try {
-            patentChaiCiTi= sortByTokenFrequence(ThkAnalyzer.getInstance().analysis(patentTi));
-            citedChaiCiTi=  sortByTokenFrequence(ThkAnalyzer.getInstance().analysis(patentCitedTi));
-            patentCLMSChaiCiTi =  sortByTokenFrequence(ThkAnalyzer.getInstance().analysis(patentCLMS));
-            patentDESCChaiCiTi =  sortByTokenFrequence(ThkAnalyzer.getInstance().analysis(patentDESC));
-            citedCLMSChaiCiTi =  sortByTokenFrequence(ThkAnalyzer.getInstance().analysis(citedCLMS));
-            citedDESCChaiCiTi =  sortByTokenFrequence(ThkAnalyzer.getInstance().analysis(citedDESC));
+            resultmMap.put("patentChaiCiTi",filterListByTokenName(sortByTokenFrequence(ThkAnalyzer.getInstance().analysis(patentTi))));
+            resultmMap.put("citedChaiCiTi",filterListByTokenName(sortByTokenFrequence(ThkAnalyzer.getInstance().analysis(patentCitedTi))));
+            resultmMap.put("patentCLMSChaiCiTi",filterListByTokenName(sortByTokenFrequence(ThkAnalyzer.getInstance().analysis(patentCLMS))));
+            resultmMap.put("patentDESCChaiCiTi",filterListByTokenName(sortByTokenFrequence(ThkAnalyzer.getInstance().analysis(patentDESC))));
+            resultmMap.put("citedCLMSChaiCiTi",filterListByTokenName( sortByTokenFrequence(ThkAnalyzer.getInstance().analysis(citedCLMS))));
+            resultmMap.put("citedDESCChaiCiTi",filterListByTokenName(sortByTokenFrequence(ThkAnalyzer.getInstance().analysis(citedDESC))));
         } catch (Exception e) {
             e.printStackTrace();
         }
-        map.put("thispatentBaseInfo", patentBaseInfoMap);
-        map.put("citepatentBaseInfo", citeBaseInfoMap);
-        map.put("patentChaiCiTi",patentChaiCiTi);
-        map.put("citedChaiCiTi",citedChaiCiTi);
-        map.put("patentCLMSChaiCiTi",patentCLMSChaiCiTi);
-        map.put("patentDESCChaiCiTi",patentDESCChaiCiTi);
-        map.put("citedCLMSChaiCiTi",citedCLMSChaiCiTi);
-        map.put("citedDESCChaiCiTi",citedDESCChaiCiTi);
-        return map;
+        return resultmMap;
     }
 
+    private List filterListByTokenName(List source){
+        List target=new ArrayList();
+         int size=source.size();
+         if(source == null || size < 0){
+           return  null;
+         }
+         for(int i=0;i<size; i++){
+              Token token= (Token) source.get(i);
+              int length = token.getWord().length();
+              if(length >= 2){
+                  target.add(token);
+              }
+         }
+         return target;
+    }
     private List sortByTokenFrequence(List sourceList){
         Collections.sort(sourceList, new TokenComparator());
         return sourceList;
     }
-    private List sortByTokenFrequence8(List sourceList){
-        Collections.sort(sourceList, new TokenComparator());
-        return sourceList;
-    }
-
     private class TokenComparator implements Comparator {
         public int compare(Object o1, Object o2) {
             Token token1 = (Token) o1;
@@ -351,6 +358,20 @@ public class PatentSearchServiceImpl implements PatentSearchService {
         return true;
     }
 
-
+    /**
+     * 传入一段文本，调用拆词接口，返回拆词及频率
+     * @param text
+     * @return
+     */
+    @Override
+    public List<ZKPatentMark> searchSortByKeywordFreqsList(String text) {
+        List list=new ArrayList();
+        try {
+            list= sortByTokenFrequence(ThkAnalyzer.getInstance().analysis(text));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return filterListByTokenName(list);
+    }
 
 }
