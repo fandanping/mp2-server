@@ -69,16 +69,21 @@ public class PatentSearchController {
      */
     @PostMapping("/keyword/save")
     public Map<String, Object> saveZKMarkKeyword(@RequestBody Map postMap, HttpServletRequest request) {
+        String an= (String) postMap.get("an");
         Gson gson = new Gson();
         String markStr = (String) postMap.get("markList");
         ArrayList<IpcMark> markList = gson.fromJson(markStr, new TypeToken<List<ZKPatentMark>>(){}.getType());
         String citedmarkStr = (String) postMap.get("citedMarkList");
         ArrayList<IpcMark> citedMarkList = gson.fromJson(citedmarkStr, new TypeToken<List<ZKPatentMark>>(){}.getType());
         String userId = (String) request.getAttribute(Constant.USER_ID);
-        boolean flagPatent=patentSearchService.addMark(userId,markList);
-        boolean flagCited=patentSearchService.addMark(userId,citedMarkList);
+        boolean flagPatent;
+       // boolean flagCited;
+        flagPatent=patentSearchService.addMark(an,markList);
+
+        // flagCited=patentSearchService.addMark(userId,citedMarkList);
         Map<String ,Object> map=new HashMap<String,Object>();
-        map.put("flag",flagPatent && flagCited);
+       // map.put("flag",flagPatent && flagCited);
+        map.put("flag",flagPatent);
         return map;
     }
     /**
@@ -91,6 +96,15 @@ public class PatentSearchController {
         result.put("sortByKeywordFreqsList", patentSearchService.searchSortByKeywordFreqsList(text));
         return result;
     }
+
+    @PostMapping("/keyword/remove/key")
+    public Map<String, Object> removeErrorKeyword(@RequestBody Map postMap, HttpServletRequest request) {
+        Map result=new HashMap<String,String>();
+        String text = (String) postMap.get("errorKeyWord");
+        result.put("flag", patentSearchService.removeErrorKeyword(text));
+        return result;
+    }
+
 
 
 }

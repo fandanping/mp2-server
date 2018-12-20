@@ -16,7 +16,11 @@ public interface PatentSearchService {
     //查询标引词
     public List<ZKPatentMark> showMarkList(String an);
     //保存标引词
-    public boolean addMark(String userId, List markList);
+    public boolean addMark(String an, List markList);
+
+    //删除错误的分词关键词
+    public boolean removeErrorKeyword(String errorKeyword);
+
     //查询一段文本拆词后词几频率
     public List<ZKPatentMark> searchSortByKeywordFreqsList(String  text);
 }

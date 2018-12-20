@@ -263,12 +263,12 @@ public class PatentSearchServiceImpl implements PatentSearchService {
         List<ZKPatentMark> list=new ArrayList<ZKPatentMark>();
         JedisCluster jedis = JedisPoolUtil.getJedis();
         //Jedis jedis= JedisPoolUtilSingle.getJedis();
-        String mark=jedis.get("zkmark"+an);
+        String mark=jedis.get("zk"+an);
         Map markMap=gson.fromJson(mark,Map.class);
         if(markMap!=null){
             String tiMarkWord=markMap.get("zkTiWord").toString();
-            String clmsMarkWord=markMap.get("zkClmsWord").toString();
-            String descMarkWOrd=markMap.get("zkDescWord").toString();
+            String othersMarkWord=markMap.get("zkOthersWord").toString();
+           // String descMarkWOrd=markMap.get("zkDescWord").toString();
             String zkAn=markMap.get("zkAn").toString();
             if(tiMarkWord.length()!=0){
                 String[] ti=tiMarkWord.split(",");
@@ -280,17 +280,17 @@ public class PatentSearchServiceImpl implements PatentSearchService {
                     list.add(timark);
                 }
             }
-            if(clmsMarkWord.length()!=0){
-                String[] clms=clmsMarkWord.split(",");
-                for(int i=0;i<clms.length;i++){
-                    ZKPatentMark clmsmark=new ZKPatentMark();
-                    clmsmark.setAn(zkAn);
-                    clmsmark.setType("2");
-                    clmsmark.setWord(clms[i]);
-                    list.add(clmsmark);
+            if(othersMarkWord.length()!=0){
+                String[] others=othersMarkWord.split(",");
+                for(int i=0;i<others.length;i++){
+                    ZKPatentMark othermark=new ZKPatentMark();
+                    othermark.setAn(zkAn);
+                    othermark.setType("2");
+                    othermark.setWord(others[i]);
+                    list.add(othermark);
                 }
             }
-            if(descMarkWOrd.length()!=0){
+           /* if(descMarkWOrd.length()!=0){
                 String[] clms=descMarkWOrd.split(",");
                 for(int i=0;i<clms.length;i++){
                     ZKPatentMark descmark=new ZKPatentMark();
@@ -299,7 +299,7 @@ public class PatentSearchServiceImpl implements PatentSearchService {
                     descmark.setWord(clms[i]);
                     list.add(descmark);
                 }
-            }
+            }*/
         }
         //JedisPoolUtilSingle.closeJedis(jedis);
         return list;
@@ -307,32 +307,32 @@ public class PatentSearchServiceImpl implements PatentSearchService {
     /**
      * 保存标引词
      * 保存到redis
-     * @param userId
+     * @param an
      * @param
      * @param markList
      * @return
      */
     @Override
-    public boolean addMark(String userId, List markList) {
+    public boolean addMark(String an, List markList) {
         Gson gson=new Gson();
         List<ZKPatentMark> zkPatentMarkList=markList;
-        String an=zkPatentMarkList.get(0).getAn();
+       // String an=zkPatentMarkList.get(0).getAn();
         JedisCluster jedis = JedisPoolUtil.getJedis();
         //Jedis jedis= JedisPoolUtilSingle.getJedis();
         Map<String,String> markMap=new HashMap<String,String>();
         String timark ="";
-        String clmsmark ="";
-        String descmark="";
+        String othersmark ="";
+       // String descmark="";
         for(int i=0;i<zkPatentMarkList.size();i++){
             ZKPatentMark item=zkPatentMarkList.get(i);
             String  type=item.getType();
             if(type.equals("1")){
                 timark += item.getWord()+",";
             }else if(type.equals("2")){
-                clmsmark += item.getWord()+",";
-            }else if(type.equals("3")){
+                othersmark += item.getWord()+",";
+            }/*else if(type.equals("3")){
                 descmark += item.getWord()+",";
-            }
+            }*/
         }
         if(timark.length()!=0){
             String timarkResult=timark.substring(0,timark.length()-1);
@@ -340,22 +340,34 @@ public class PatentSearchServiceImpl implements PatentSearchService {
         }else{
             markMap.put("zkTiWord","");
         }
-        if(clmsmark.length()!=0){
-            String clmsmarkResult=clmsmark.substring(0,clmsmark.length()-1);
-            markMap.put("zkClmsWord",clmsmarkResult);
+        if(othersmark.length()!=0){
+            String clmsmarkResult=othersmark.substring(0,othersmark.length()-1);
+            markMap.put("zkOthersWord",clmsmarkResult);
         }else{
-            markMap.put("zkClmsWord","");
+            markMap.put("zkOthersWord","");
         }
-        if(descmark.length()!=0){
+       /* if(descmark.length()!=0){
             String descmarkResult=descmark.substring(0,descmark.length()-1);
             markMap.put("zkDescWord",descmarkResult);
         }else{
             markMap.put("zkDescWord","");
-        }
-        markMap.put("zkAn",zkPatentMarkList.get(0).getAn());
-        jedis.set("zkmark"+an, gson.toJson(markMap));
+        }*/
+        markMap.put("zkAn",an);
+        jedis.set("zk"+an, gson.toJson(markMap));
        // JedisPoolUtilSingle.closeJedis(jedis);
         return true;
+    }
+
+    /**
+     * 保存错误的分词
+     * @param errorKeyword
+     * @return
+     */
+    @Override
+    public boolean removeErrorKeyword(String errorKeyword) {
+        int flag = patentRepository.saveErrorKeyWord(errorKeyword);
+        // JedisPoolUtilSingle.closeJedis(jedis);
+        return (flag>0) ? true : false;
     }
 
     /**

@@ -26,8 +26,8 @@ public class JedisPoolUtil {
         Set<HostAndPort> nodes = new LinkedHashSet<HostAndPort>();
         //nodes.add(new HostAndPort("localhost", 6379));
         nodes.add(new HostAndPort("10.51.52.81", 7001));
-       // nodes.add(new HostAndPort("10.51.52.82", 7001));
-       // nodes.add(new HostAndPort("10.51.52.83", 7001));
+        nodes.add(new HostAndPort("10.51.52.82", 7001));
+        nodes.add(new HostAndPort("10.51.52.83", 7001));
         pool = new JedisCluster(nodes,config);
     }
 
