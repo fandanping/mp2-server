@@ -17,9 +17,14 @@ public interface ZKPatentMarkService {
     public Map<String,Object> searchZKPatentDetailInfo(String an);
     //查询标题拆词
     public List showChaiCiList(String title);
-    //保存标引词
-    public boolean addZKMark(String userId, List markList);
-    //查询标引词
+    //保存标引词到Oracle数据库
+    public boolean addZKMark(String userId, List markList,int patenttype);
+    //保存标引词到Reids
+    public boolean addZKMarkToRedis(String userId, List markList,int patenttype);
+    //从数据库中查询标引词
     public List<ZKPatentMark> showMarkList(String an);
-
+    //从Redis中查询标引词
+    public List<ZKPatentMark> showMarkListFromRedis(String an);
+    //删除错误的分词关键词
+    public boolean removeErrorKeyword(String errorKeyword);
 }

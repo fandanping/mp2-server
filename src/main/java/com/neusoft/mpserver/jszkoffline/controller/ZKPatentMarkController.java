@@ -70,8 +70,16 @@ public class ZKPatentMarkController {
    @GetMapping("/keyword/search/{an}")
     public Map<String, List<ZKPatentMark>> searchZKMarkKeywordList(@PathVariable String an, HttpServletRequest request) {
        Map<String, List<ZKPatentMark>> result = new HashMap<String, List<ZKPatentMark>>();
-       result.put("zkmarkList", zkPatentMarkService.showMarkList(an));
+       List<ZKPatentMark> list = getZKPatentMarkList(an, "Redis");
+       result.put("zkmarkList", list);
        return result;
+    }
+
+    private List<ZKPatentMark> getZKPatentMarkList(String an, String resouceType){
+        if("Redis".equals(resouceType))
+            return zkPatentMarkService.showMarkListFromRedis(an);
+        else
+            return zkPatentMarkService.showMarkList(an);
     }
 
     /**
@@ -87,10 +95,29 @@ public class ZKPatentMarkController {
         String markStr = (String) postMap.get("markList");
         ArrayList<IpcMark> markList = gson.fromJson(markStr, new TypeToken<List<ZKPatentMark>>(){}.getType());
         String userId = (String) request.getAttribute(Constant.USER_ID);
-        boolean flag=zkPatentMarkService.addZKMark(userId,markList);
+        int patenttype= (int) postMap.get("patenttype");
+        boolean flag= saveZKMark(userId,markList,patenttype,"Redis");
         Map<String ,Object> map=new HashMap<String,Object>();
         map.put("flag",flag);
         return map;
+    }
+
+    private boolean saveZKMark(String userId,List markList,int patenttype,String targetResource){
+        boolean flag = false;
+        if("Redis".equals(targetResource)){
+            flag = zkPatentMarkService.addZKMarkToRedis(userId,markList,patenttype);
+        }else{
+            flag = zkPatentMarkService.addZKMark(userId,markList,patenttype);
+        }
+        return flag;
+    }
+
+    @PostMapping("/keyword/remove/key")
+    public Map<String, Object> removeErrorKeyword(@RequestBody Map postMap, HttpServletRequest request) {
+        Map result=new HashMap<String,String>();
+        String text = (String) postMap.get("errorKeyWord");
+        result.put("removeZKErrorKeyWordFlag", zkPatentMarkService.removeErrorKeyword(text));
+        return result;
     }
 
     /**

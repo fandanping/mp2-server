@@ -18,4 +18,7 @@ public class ZKPatentMark {
     private String an;
     //标引词
     private String word;
+
+    private int inv_type;
+
 }

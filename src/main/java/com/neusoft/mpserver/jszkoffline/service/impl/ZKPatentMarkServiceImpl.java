@@ -9,6 +9,8 @@ import com.neusoft.mpserver.common.engine.TrsEngine;
 import com.neusoft.mpserver.common.util.JedisPoolUtil;
 import com.neusoft.mpserver.common.util.JedisPoolUtilSingle;
 import com.neusoft.mpserver.common.util.XmlFormatter;
+import com.neusoft.mpserver.jszkoffline.dao.ZKPatentRepository;
+import com.neusoft.mpserver.jszkoffline.domain.ZKPatent;
 import com.neusoft.mpserver.jszkoffline.domain.ZKPatentMark;
 import com.neusoft.mpserver.jszkoffline.service.ZKPatentMarkService;
 import com.neusoft.mpserver.sipo57.domain.Constant;
@@ -28,6 +30,8 @@ import java.util.*;
 public class ZKPatentMarkServiceImpl implements ZKPatentMarkService {
     @Autowired
     private  TrsEngine trsEngine;
+    @Autowired
+    private ZKPatentRepository zkPatentRepository;
     /**
      * trs查询CNABS库公开日在6月份-九月份 ,排除外观，按照公开日降序，分页查询，返回想要展示的字段信息（标题 摘要 公开日 ）
      * @param pagination
@@ -39,7 +43,12 @@ public class ZKPatentMarkServiceImpl implements ZKPatentMarkService {
         List<Map<String,String>>  patentList=new ArrayList<Map<String,String>>();
         Condition condition = new Condition();
         //检索式
-        String searchExp = "pd >='2018.08' and pd<='2018.09' and inty='fm'";
+        String searchExp = "pd >='2018.11.1' and pd<='2018.11.5' and inty='fm' and ic='A61K36'";
+        //String searchExp = "pd >='2018.11.15' and pd<='2018.12.31' and inty='fm' and ic='A61K36'";
+        //pd >='2018.12.13' and pd<='2018.12.18' and inty='fm'
+        //pd >='2018.11.15' and pd<='2018.12.31' and inty='fm' and ic='A61K36'
+
+        //String searchExp = "pd >='2018.06' and pd<='2018.09' and inty='fm' and ti='%电缆%' ";
         condition.setExp(searchExp);
         //选库
         condition.setDbName(Constant.CNABS_DB);
@@ -194,7 +203,7 @@ public class ZKPatentMarkServiceImpl implements ZKPatentMarkService {
      * @return
      */
     @Override
-    public boolean addZKMark(String userId, List markList) {
+    public boolean addZKMarkToRedis(String userId, List markList,int patenttype) {
         Gson gson=new Gson();
         List<ZKPatentMark> zkPatentMarkList=markList;
         String an=zkPatentMarkList.get(0).getAn();
@@ -225,12 +234,103 @@ public class ZKPatentMarkServiceImpl implements ZKPatentMarkService {
             markMap.put("zkOthersWord","");
         }
         markMap.put("zkAn",zkPatentMarkList.get(0).getAn());
+        markMap.put("zkType",Integer.toString(patenttype));
         jedis.set("zk"+an, gson.toJson(markMap));
         System.out.println(gson.toJson(markMap));
-
         //JedisPoolUtil.closeJedis(jedis);
         return true;
     }
+
+    /**
+     * 保存标引词
+     * @param userId
+     * @param markList
+     * @return
+     */
+    @Override
+    public boolean addZKMark(String userId, List markList,int patenttype) {
+        Gson gson=new Gson();
+        List<ZKPatentMark> zkPatentMarkList=markList;
+        String an=zkPatentMarkList.get(0).getAn();
+        Map<String,String> markMap=new HashMap<String,String>();
+        String timark ="";
+        String othersmark ="";
+        for(int i=0;i<zkPatentMarkList.size();i++){
+            ZKPatentMark item=zkPatentMarkList.get(i);
+            String  type=item.getType();
+            if(type.equals("1")){
+                timark += item.getWord()+",";
+            }else if(type.equals("2")){
+                othersmark += item.getWord()+",";
+            }
+        }
+        String timarkResult="";
+        if(timark.length()!=0){
+            timarkResult=timark.substring(0,timark.length()-1);
+        }else{
+            timarkResult="";
+        }
+        String othersmarkResult="";
+        if(othersmark.length()!=0){
+            othersmarkResult=othersmark.substring(0,othersmark.length()-1);
+        }else{
+            othersmarkResult="";
+        }
+        int flag;
+        if(zkPatentRepository.findZKMarksByAn(an).size()!=0){
+            flag=zkPatentRepository.updateZKMark(an,timarkResult,othersmarkResult,patenttype);
+        }else {
+            flag=zkPatentRepository.saveKeyWord(an,timarkResult,othersmarkResult,patenttype);
+        }
+       // int flag=zkPatentRepository.saveKeyWord(an,timarkResult,othersmarkResult);
+        return (flag>0) ? true : false;
+    }
+
+    /**
+     * 查询显示标引词
+     * @param an
+     * @return
+     */
+    @Override
+    public List<ZKPatentMark> showMarkList(String an) {
+        List<ZKPatentMark> list=new ArrayList<ZKPatentMark>();
+        List<Object[]> resultold = zkPatentRepository.findZKMarksByAn(an);
+        List<ZKPatentMark> tiKeywordList = new ArrayList<>();
+        List<ZKPatentMark> otherKeywordList = new ArrayList<>();
+        if(resultold !=null && resultold.size()>0){
+            Object[]  result=resultold.get(0);
+            String tiMarkWord= (String) result[1];
+            tiMarkWord = tiMarkWord.replace( " ", "");
+            String othersMarkWord= (String) result[2];
+            othersMarkWord = othersMarkWord.replace( " ", "");
+            String zkAn= (String) result[0];
+            int invtype= Integer.valueOf(result[3].toString());
+            if(tiMarkWord.length()!=0){
+                tiKeywordList = handleKeywordsToList(zkAn,invtype, tiMarkWord, "1");
+                list.addAll(tiKeywordList);
+            }
+            if(othersMarkWord.length()!=0){
+                otherKeywordList = handleKeywordsToList(zkAn,invtype, othersMarkWord, "2");
+                list.addAll(otherKeywordList);
+            }
+        }
+        return list;
+    }
+
+    private List<ZKPatentMark> handleKeywordsToList(String an, int invType, String keywords, String tiOrOtherType){
+        List<ZKPatentMark> list=new ArrayList<ZKPatentMark>();
+        String[] tempKeywords= keywords.split(",");
+        for(int i=0;i<tempKeywords.length;i++){
+            ZKPatentMark timark=new ZKPatentMark();
+            timark.setInv_type(invType);
+            timark.setAn(an);
+            timark.setType(tiOrOtherType);
+            timark.setWord(tempKeywords[i]);
+            list.add(timark);
+        }
+        return list;
+    }
+
 
     /**
      * 查询显示标引词
@@ -238,8 +338,8 @@ public class ZKPatentMarkServiceImpl implements ZKPatentMarkService {
      * @param an
      * @return
      */
-    @Override
-    public List<ZKPatentMark> showMarkList(String an) {
+   @Override
+    public List<ZKPatentMark> showMarkListFromRedis(String an) {
         Gson gson=new Gson();
         List<ZKPatentMark> list=new ArrayList<ZKPatentMark>();
         //Jedis jedis= JedisPoolUtilSingle.getJedis();
@@ -250,6 +350,8 @@ public class ZKPatentMarkServiceImpl implements ZKPatentMarkService {
             String tiMarkWord=markMap.get("zkTiWord").toString();
             String othersMarkWord=markMap.get("zkOthersWord").toString();
             String zkAn=markMap.get("zkAn").toString();
+            System.out.println(markMap.get("zkType").toString());
+            int zkType = Integer.parseInt(markMap.get("zkType").toString());
             if(tiMarkWord.length()!=0){
                 String[] ti=tiMarkWord.split(",");
                 for(int i=0;i<ti.length;i++){
@@ -257,6 +359,7 @@ public class ZKPatentMarkServiceImpl implements ZKPatentMarkService {
                     timark.setAn(zkAn);
                     timark.setType("1");
                     timark.setWord(ti[i]);
+                    timark.setInv_type(zkType);
                     list.add(timark);
                 }
             }
@@ -267,12 +370,24 @@ public class ZKPatentMarkServiceImpl implements ZKPatentMarkService {
                     clmsmark.setAn(zkAn);
                     clmsmark.setType("2");
                     clmsmark.setWord(othersWord[i]);
+                    clmsmark.setInv_type(zkType);
                     list.add(clmsmark);
                 }
             }
         }
         //JedisPoolUtil.closeJedis(jedis);
         return list;
+    }
+    /**
+     * 保存错误的分词
+     * @param errorKeyword
+     * @return
+     */
+    @Override
+    public boolean removeErrorKeyword(String errorKeyword) {
+        int flag = zkPatentRepository.saveErrorKeyWord(errorKeyword);
+        // JedisPoolUtilSingle.closeJedis(jedis);
+        return (flag>0) ? true : false;
     }
 
 }
