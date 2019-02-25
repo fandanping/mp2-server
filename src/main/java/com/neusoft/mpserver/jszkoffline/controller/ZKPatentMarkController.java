@@ -35,7 +35,19 @@ public class ZKPatentMarkController {
      */
     @GetMapping("/patent/search/list")
     public Map<String, Object> searchZKPatentList(Pagination pagination, String token) {
-        Map<String, Object> patentMap = zkPatentMarkService.searchZKPatentList(pagination);
+        // 如果
+      //  Map<String, Object> patentMap = searchZKPatentListByDatasource("TRS",pagination);
+        Map<String, Object> patentMap = searchZKPatentListByDatasource("TRS",pagination);
+        return patentMap;
+    }
+
+    private Map<String, Object> searchZKPatentListByDatasource(String sourceType, Pagination pagination){
+        Map<String, Object> patentMap= new HashMap<>();
+        if("TRS".equals(sourceType)){
+            patentMap = zkPatentMarkService.searchZKPatentList(pagination);
+        }else if("Oracle".equals(sourceType)){
+           // patentMap = zkPatentMarkService.searchZKPatentListFromOracle(pagination);
+        }
         return patentMap;
     }
 
@@ -52,9 +64,11 @@ public class ZKPatentMarkController {
         patentMap = zkPatentMarkService.searchZKPatentDetailInfo(an);
         return patentMap;
     }
+
     //查询标题拆词
-    @GetMapping("/chaici/list/{ti}")
-    public Map<String, List> chaiciList (@PathVariable String ti){
+    @PostMapping("/chaici/list")
+    public Map<String, List> chaiciList (@RequestBody Map postMap){
+        String ti = (String) postMap.get("title");
         Map<String, List> result = new HashMap<String, List>();
         result.put("ZKchaiCiList", zkPatentMarkService.showChaiCiList(ti));
         return result;

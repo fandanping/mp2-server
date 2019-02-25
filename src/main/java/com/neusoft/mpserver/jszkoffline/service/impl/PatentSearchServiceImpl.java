@@ -353,6 +353,7 @@ public class PatentSearchServiceImpl implements PatentSearchService {
             markMap.put("zkDescWord","");
         }*/
         markMap.put("zkAn",an);
+        markMap.put("zkType","1");
         jedis.set("zk"+an, gson.toJson(markMap));
        // JedisPoolUtilSingle.closeJedis(jedis);
         return true;
