@@ -20,9 +20,9 @@ public interface ZKPatentMarkService {
     //查询标题拆词
     public List showChaiCiList(String title);
     //保存标引词到Oracle数据库
-    public boolean addZKMark(String userId, List markList,int patenttype);
+    public boolean addZKMark(String userId,String an, List markList,int patenttype);
     //保存标引词到Reids
-    public boolean addZKMarkToRedis(String userId, List markList,int patenttype);
+    public boolean addZKMarkToRedis(String userId, String an,List markList,int patenttype);
     //从数据库中查询标引词
     public List<ZKPatentMark> showMarkList(String an);
     //从Redis中查询标引词

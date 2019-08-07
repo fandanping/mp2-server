@@ -110,18 +110,19 @@ public class ZKPatentMarkController {
         ArrayList<IpcMark> markList = gson.fromJson(markStr, new TypeToken<List<ZKPatentMark>>(){}.getType());
         String userId = (String) request.getAttribute(Constant.USER_ID);
         int patenttype= (int) postMap.get("patenttype");
-        boolean flag= saveZKMark(userId,markList,patenttype,"Redis");
+        String an = (String) postMap.get("an");
+        boolean flag= saveZKMark(userId, an,markList,patenttype,"Redis");
         Map<String ,Object> map=new HashMap<String,Object>();
         map.put("flag",flag);
         return map;
     }
 
-    private boolean saveZKMark(String userId,List markList,int patenttype,String targetResource){
+    private boolean saveZKMark(String userId,String an,List markList,int patenttype,String targetResource){
         boolean flag = false;
         if("Redis".equals(targetResource)){
-            flag = zkPatentMarkService.addZKMarkToRedis(userId,markList,patenttype);
+            flag = zkPatentMarkService.addZKMarkToRedis(userId,an,markList,patenttype);
         }else{
-            flag = zkPatentMarkService.addZKMark(userId,markList,patenttype);
+            flag = zkPatentMarkService.addZKMark(userId,an,markList,patenttype);
         }
         return flag;
     }

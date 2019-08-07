@@ -1,26 +1,18 @@
 package com.neusoft.mpserver.jszkoffline.service.impl;
 
-import com.google.gson.Gson;
-import com.neusoft.mpserver.common.domain.Condition;
 import com.neusoft.mpserver.common.domain.Pagination;
 import com.neusoft.mpserver.common.domain.Record;
 import com.neusoft.mpserver.common.domain.TrsResult;
 import com.neusoft.mpserver.common.engine.TrsEngine;
-import com.neusoft.mpserver.common.util.JedisPoolUtil;
-import com.neusoft.mpserver.common.util.JedisPoolUtilSingle;
 import com.neusoft.mpserver.common.util.XmlFormatter;
+import com.neusoft.mpserver.jszkoffline.common.DBAndTrsService;
 import com.neusoft.mpserver.jszkoffline.dao.ZKPatentRepository;
-import com.neusoft.mpserver.jszkoffline.domain.ZKPatent;
 import com.neusoft.mpserver.jszkoffline.domain.ZKPatentMark;
 import com.neusoft.mpserver.jszkoffline.service.ZKPatentMarkService;
 import com.neusoft.mpserver.sipo57.domain.Constant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisCluster;
 import thk.analyzer.ThkAnalyzer;
-import thk.analyzer.Token;
-
 import java.util.*;
 
 /**
@@ -32,6 +24,8 @@ public class ZKPatentMarkServiceImpl implements ZKPatentMarkService {
     private  TrsEngine trsEngine;
     @Autowired
     private ZKPatentRepository zkPatentRepository;
+    @Autowired
+    private DBAndTrsService dbAndTrsService;
     /**
      * trs查询CNABS库公开日在6月份-九月份 ,排除外观，按照公开日降序，分页查询，返回想要展示的字段信息（标题 摘要 公开日 ）
      * @param pagination
@@ -39,11 +33,11 @@ public class ZKPatentMarkServiceImpl implements ZKPatentMarkService {
      */
     @Override
     public Map<String, Object> searchZKPatentList(Pagination pagination) {
+    //1. 初始化
         Map<String, Object> map = new HashMap<String, Object>();
         List<Map<String,String>>  patentList=new ArrayList<Map<String,String>>();
-        Condition condition = new Condition();
-        //检索式
-        String searchExp = "pd >='2018.11.1' and pd<='2018.12.31' and pa='华为技术有限公司'";
+    //2. 拼接检索条件
+        String searchExp = "pd >='2018.06.1' and pd<='2018.07.1' and ti= '%曲轴%'";
         //String searchExp = "pd >='2018.11.15' and pd<='2018.12.31' and inty='fm' and ic='A61K36'";
         //pd >='2018.12.13' and pd<='2018.12.18' and inty='fm'
         //pd >='2018.11.15' and pd<='2018.12.31' and inty='fm' and ic='A61K36'
@@ -51,30 +45,20 @@ public class ZKPatentMarkServiceImpl implements ZKPatentMarkService {
         //String searchExp = "pd >='2018.06' and pd<='2018.09' and inty='fm' and ti='%电缆%' ";
         //gk_pd >='2018.11.1' and gk_pd<='2018.11.5' and inty='fm' and ic='A61K36'
         //String searchExp = "pd >='2018.11.1' and pd<='2018.12.31' and pa='珠海格力电器股份有限公司'";
-        condition.setExp(searchExp);
-        //选库
-        condition.setDbName(Constant.CNABS_DB);
-        //显示字段 :申请号 标题 公开日 主分类
-        condition.setDisplayFields(Constant.CNTXT_AN + "," + Constant.GK_TI+","+Constant.PD+","+Constant.IPC_MAIN+","+Constant.GK_PN+","+Constant.GK_FIELDS+","+ Constant.SQ_FIELDS + "," + Constant.OTHER_FIELDS);
-        //排序:降序
-        //condition.setSortFields("-"+"pd");
-        //分页查询
+        String fields =Constant.CNTXT_AN + "," + Constant.GK_TI+","+Constant.PD+","+Constant.IPC_MAIN+","+Constant.GK_PN+","+Constant.GK_FIELDS+","+ Constant.SQ_FIELDS + "," + Constant.OTHER_FIELDS;
+        String dbName = Constant.CNABS_DB;
         Pagination page=new Pagination();
         page.setStart(pagination.getStart());
         page.setSize(pagination.getSize());
-        condition.setPagination(page);
-        TrsResult tr = trsEngine.search(condition);
-        //获取trs查询结果
+    //3. 调用接口查询结果集
+        TrsResult tr = dbAndTrsService.searchTRS(dbName,searchExp,fields, page );
+    //4. 获取trs查询结果
         List<Record> recordList = tr.getRecords();
-        //结果集记录数
-
+        //4.1 结果集记录数
         int resultSize = recordList.size();
-        //查询结果集总数
-        //System.out.println("计数"+ tr.getPagination().getTotal());
-        //封装返回结果集
-        Map<String, String> patentInfoMap= new HashMap<String,String>();
+    //5. 封装返回结果集
         for(int i=0;i<resultSize;i++){
-            Map<String, String> assembleData=AssembleData(recordList.get(i).getDataMap());
+            Map<String, String> assembleData=dbAndTrsService.AssembleData(recordList.get(i).getDataMap());
             patentList.add(assembleData);
         }
         pagination.setTotal(tr.getPagination().getTotal());
@@ -83,39 +67,15 @@ public class ZKPatentMarkServiceImpl implements ZKPatentMarkService {
         return map;
     }
 
+    /**
+     * 从数据库 表中查询列表 ，目前该方法没有实现 ，用不上
+     * @param pagination
+     * @return
+     */
     @Override
     public Map<String, Object> searchZKPatentListFromOracle(Pagination pagination) {
         Map<String, Object> map = new HashMap<String, Object>();
         return map;
-    }
-    /**
-     * 默认取GK（公开）字段数据，若为空，则取SQ（授权）字段数据
-     *
-     * @param dataMap 检索出的trs行数据
-     * @return 组装后的数据
-     */
-    private Map<String, String> AssembleData(Map<String, String> dataMap) {
-        Map<String, String> resultMap = new HashMap<String, String>();
-        String gkPn = dataMap.get(Constant.GK_PN);
-        String ap=dataMap.get(Constant.CNTXT_AN).split(" ")[0];
-        String PD=dataMap.get(Constant.PD);
-        String ipcMain=dataMap.get(Constant.IPC_MAIN);
-        String prefix = Constant.GK_PREFIX;
-        if (gkPn == null || gkPn.equals("")) {
-            prefix = Constant.SQ_PREFIX;
-        }
-        String[] mainFields = Constant.MAIN_FIELDS.split(",");
-        for (String f : mainFields) {
-            resultMap.put(f, dataMap.get(prefix + f));
-        }
-        String[] otherFields = Constant.OTHER_FIELDS.split(",");
-        for (String f : otherFields) {
-            resultMap.put(f, dataMap.get(f));
-        }
-        resultMap.put("Ap",ap);
-        resultMap.put("PD",PD);
-        resultMap.put("ipcMain",ipcMain);
-        return resultMap;
     }
 
     /**
@@ -125,16 +85,17 @@ public class ZKPatentMarkServiceImpl implements ZKPatentMarkService {
      */
     @Override
     public Map<String, Object> searchZKPatentDetailInfo(String an) {
+    // 1. 初始化
         Map<String,Object> map=new HashMap<String,Object>();
-        Condition condition=new Condition();
-        //检索式
+    // 2. 拼接检索条件
         String searchExp = "nrd_an=('" + an +"')";
-        condition.setExp(searchExp);
-        condition.setDbName(Constant.CNTXT_DB);
-        condition.setDisplayFields(Constant.CLMS + ","+ Constant.CNTXT_AN+","+Constant.DESC);
-        TrsResult result = trsEngine.search(condition);
+        String dbName = Constant.CNTXT_DB;
+        String displayFields = Constant.CLMS + ","+ Constant.CNTXT_AN+","+Constant.DESC;
+    // 3. 获取结果集
+        TrsResult result = dbAndTrsService.searchTRS(dbName,searchExp,displayFields);
         List<Record> recordList = result.getRecords();
         //结果集记录数
+    // 4. 结果集处理
         if(recordList.size() ==0){
             map.put("ClmsChaici","");
             map.put("DescChaici","");
@@ -156,61 +117,13 @@ public class ZKPatentMarkServiceImpl implements ZKPatentMarkService {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            map.put("ClmsChaici",filterListByTokenName(sortByTokenFrequence(ClmsChaici)));
-            map.put("DescChaici",filterListByTokenName(sortByTokenFrequence(DescChaici)));
+            map.put("ClmsChaici",dbAndTrsService.filterListByTokenName(dbAndTrsService.sortByTokenFrequence(ClmsChaici)));
+            map.put("DescChaici",dbAndTrsService.filterListByTokenName(dbAndTrsService.sortByTokenFrequence(DescChaici)));
             map.put("ZKPatentDetailInfo",newmap);
         }
-      /*  Map<String, String> temp=recordList.get(0).getDataMap();
-        String clms=XmlFormatter.format(temp.get(Constant.CLMS),XmlFormatter.XmlType.CLMS);
-        String nrdan=temp.get(Constant.CNTXT_AN);
-        String desc=XmlFormatter.format(temp.get(Constant.DESC),XmlFormatter.XmlType.DESC);
-        Map newmap=new HashMap();
-        newmap.put("CLIMS",clms);
-        newmap.put("nrdan",nrdan);
-        newmap.put("DESC",desc);
-        List ClmsChaici=new ArrayList();
-        List DescChaici=new ArrayList();
-        try {
-            ClmsChaici= ThkAnalyzer.getInstance().analysis(clms);
-            DescChaici=ThkAnalyzer.getInstance().analysis(desc);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        map.put("ClmsChaici",filterListByTokenName(sortByTokenFrequence(ClmsChaici)));
-        map.put("DescChaici",filterListByTokenName(sortByTokenFrequence(DescChaici)));
-        map.put("ZKPatentDetailInfo",newmap);*/
         return map;
     }
-    private List filterListByTokenName(List source){
-        List target=new ArrayList();
-        int size=source.size();
-        if(source == null || size < 0){
-            return  null;
-        }
-        for(int i=0;i<size; i++){
-            Token token= (Token) source.get(i);
-            int length = token.getWord().length();
-            if(length >= 2){
-                target.add(token);
-            }
-        }
-        return target;
-    }
-    private List sortByTokenFrequence(List sourceList){
-        Collections.sort(sourceList, new ZKPatentMarkServiceImpl.TokenComparator());
-        return sourceList;
-    }
-    private class TokenComparator implements Comparator {
-        public int compare(Object o1, Object o2) {
-            Token token1 = (Token) o1;
-            Token token2 = (Token) o2;
-            if (token1.getFreq() > token2.getFreq())
-                return -1;
-            if(token1.getFreq() < token2.getFreq())
-                return 1;
-            return 0;
-        }
-    }
+
     /**
      * 查询标题拆词参考
      * @param title
@@ -218,13 +131,7 @@ public class ZKPatentMarkServiceImpl implements ZKPatentMarkService {
      */
     @Override
     public List showChaiCiList(String title) {
-        List result=new ArrayList();
-        try {
-            result= ThkAnalyzer.getInstance().analysis(title);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return result;
+        return dbAndTrsService.getSplitwordList(title);
     }
 
     /**
@@ -236,41 +143,8 @@ public class ZKPatentMarkServiceImpl implements ZKPatentMarkService {
      * @return
      */
     @Override
-    public boolean addZKMarkToRedis(String userId, List markList,int patenttype) {
-        Gson gson=new Gson();
-        List<ZKPatentMark> zkPatentMarkList=markList;
-        String an=zkPatentMarkList.get(0).getAn();
-        //Jedis jedis= JedisPoolUtilSingle.getJedis();
-        JedisCluster jedis = JedisPoolUtil.getJedis();
-        Map<String,String> markMap=new HashMap<String,String>();
-        String timark ="";
-        String othersmark ="";
-        for(int i=0;i<zkPatentMarkList.size();i++){
-            ZKPatentMark item=zkPatentMarkList.get(i);
-            String  type=item.getType();
-           if(type.equals("1")){
-               timark += item.getWord()+",";
-           }else if(type.equals("2")){
-               othersmark += item.getWord()+",";
-           }
-        }
-        if(timark.length()!=0){
-            String timarkResult=timark.substring(0,timark.length()-1);
-            markMap.put("zkTiWord",timarkResult);
-        }else{
-            markMap.put("zkTiWord","");
-        }
-        if(othersmark.length()!=0){
-            String clmsmarkResult=othersmark.substring(0,othersmark.length()-1);
-            markMap.put("zkOthersWord",clmsmarkResult);
-        }else{
-            markMap.put("zkOthersWord","");
-        }
-        markMap.put("zkAn",zkPatentMarkList.get(0).getAn());
-        markMap.put("zkType",Integer.toString(patenttype));
-        jedis.set("zk"+an, gson.toJson(markMap));
-        //JedisPoolUtil.closeJedis(jedis);
-        return true;
+    public boolean addZKMarkToRedis(String userId,String an, List markList,int patenttype) {
+         return dbAndTrsService.saveMarkToRedis(userId,an,markList,patenttype);
     }
 
     /**
@@ -280,42 +154,8 @@ public class ZKPatentMarkServiceImpl implements ZKPatentMarkService {
      * @return
      */
     @Override
-    public boolean addZKMark(String userId, List markList,int patenttype) {
-        Gson gson=new Gson();
-        List<ZKPatentMark> zkPatentMarkList=markList;
-        String an=zkPatentMarkList.get(0).getAn();
-        Map<String,String> markMap=new HashMap<String,String>();
-        String timark ="";
-        String othersmark ="";
-        for(int i=0;i<zkPatentMarkList.size();i++){
-            ZKPatentMark item=zkPatentMarkList.get(i);
-            String  type=item.getType();
-            if(type.equals("1")){
-                timark += item.getWord()+",";
-            }else if(type.equals("2")){
-                othersmark += item.getWord()+",";
-            }
-        }
-        String timarkResult="";
-        if(timark.length()!=0){
-            timarkResult=timark.substring(0,timark.length()-1);
-        }else{
-            timarkResult="";
-        }
-        String othersmarkResult="";
-        if(othersmark.length()!=0){
-            othersmarkResult=othersmark.substring(0,othersmark.length()-1);
-        }else{
-            othersmarkResult="";
-        }
-        int flag;
-        if(zkPatentRepository.findZKMarksByAn(an).size()!=0){
-            flag=zkPatentRepository.updateZKMark(an,timarkResult,othersmarkResult,patenttype);
-        }else {
-            flag=zkPatentRepository.saveKeyWord(an,timarkResult,othersmarkResult,patenttype);
-        }
-       // int flag=zkPatentRepository.saveKeyWord(an,timarkResult,othersmarkResult);
-        return (flag>0) ? true : false;
+    public boolean addZKMark(String userId, String an,List markList,int patenttype) {
+         return dbAndTrsService.saveMarkToOracle(userId,an,markList,patenttype);
     }
 
     /**
@@ -325,44 +165,8 @@ public class ZKPatentMarkServiceImpl implements ZKPatentMarkService {
      */
     @Override
     public List<ZKPatentMark> showMarkList(String an) {
-        List<ZKPatentMark> list=new ArrayList<ZKPatentMark>();
-        List<Object[]> resultold = zkPatentRepository.findZKMarksByAn(an);
-        List<ZKPatentMark> tiKeywordList = new ArrayList<>();
-        List<ZKPatentMark> otherKeywordList = new ArrayList<>();
-        if(resultold !=null && resultold.size()>0){
-            Object[]  result=resultold.get(0);
-            String tiMarkWord= (String) result[1];
-            tiMarkWord = tiMarkWord.replace( " ", "");
-            String othersMarkWord= (String) result[2];
-            othersMarkWord = othersMarkWord.replace( " ", "");
-            String zkAn= (String) result[0];
-            int invtype= Integer.valueOf(result[3].toString());
-            if(tiMarkWord.length()!=0){
-                tiKeywordList = handleKeywordsToList(zkAn,invtype, tiMarkWord, "1");
-                list.addAll(tiKeywordList);
-            }
-            if(othersMarkWord.length()!=0){
-                otherKeywordList = handleKeywordsToList(zkAn,invtype, othersMarkWord, "2");
-                list.addAll(otherKeywordList);
-            }
-        }
-        return list;
+        return dbAndTrsService.searchMarkFromOracle(an);
     }
-
-    private List<ZKPatentMark> handleKeywordsToList(String an, int invType, String keywords, String tiOrOtherType){
-        List<ZKPatentMark> list=new ArrayList<ZKPatentMark>();
-        String[] tempKeywords= keywords.split(",");
-        for(int i=0;i<tempKeywords.length;i++){
-            ZKPatentMark timark=new ZKPatentMark();
-            timark.setInv_type(invType);
-            timark.setAn(an);
-            timark.setType(tiOrOtherType);
-            timark.setWord(tempKeywords[i]);
-            list.add(timark);
-        }
-        return list;
-    }
-
 
     /**
      * 查询显示标引词  redis
@@ -372,42 +176,7 @@ public class ZKPatentMarkServiceImpl implements ZKPatentMarkService {
      */
    @Override
     public List<ZKPatentMark> showMarkListFromRedis(String an) {
-        Gson gson=new Gson();
-        List<ZKPatentMark> list=new ArrayList<ZKPatentMark>();
-        //Jedis jedis= JedisPoolUtilSingle.getJedis();
-        JedisCluster jedis = JedisPoolUtil.getJedis();
-        String mark=jedis.get("zk"+an);
-        Map markMap=gson.fromJson(mark,Map.class);
-        if(markMap!=null){
-            String tiMarkWord=markMap.get("zkTiWord").toString();
-            String othersMarkWord=markMap.get("zkOthersWord").toString();
-            String zkAn=markMap.get("zkAn").toString();
-            int zkType = Integer.parseInt(markMap.get("zkType").toString());
-            if(tiMarkWord.length()!=0){
-                String[] ti=tiMarkWord.split(",");
-                for(int i=0;i<ti.length;i++){
-                    ZKPatentMark timark=new ZKPatentMark();
-                    timark.setAn(zkAn);
-                    timark.setType("1");
-                    timark.setWord(ti[i]);
-                    timark.setInv_type(zkType);
-                    list.add(timark);
-                }
-            }
-            if(othersMarkWord.length()!=0){
-                String[] othersWord=othersMarkWord.split(",");
-                for(int i=0;i<othersWord.length;i++){
-                    ZKPatentMark clmsmark=new ZKPatentMark();
-                    clmsmark.setAn(zkAn);
-                    clmsmark.setType("2");
-                    clmsmark.setWord(othersWord[i]);
-                    clmsmark.setInv_type(zkType);
-                    list.add(clmsmark);
-                }
-            }
-        }
-        //JedisPoolUtil.closeJedis(jedis);
-        return list;
+       return dbAndTrsService.searchMarkFromRedis(an);
     }
     /**
      * 保存错误的分词
@@ -416,9 +185,7 @@ public class ZKPatentMarkServiceImpl implements ZKPatentMarkService {
      */
     @Override
     public boolean removeErrorKeyword(String errorKeyword) {
-        int flag = zkPatentRepository.saveErrorKeyWord(errorKeyword);
-        // JedisPoolUtilSingle.closeJedis(jedis);
-        return (flag>0) ? true : false;
+        return dbAndTrsService.removeErrorKeyword(errorKeyword);
     }
 
 }

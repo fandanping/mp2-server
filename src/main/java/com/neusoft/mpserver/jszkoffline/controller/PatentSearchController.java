@@ -73,16 +73,11 @@ public class PatentSearchController {
         Gson gson = new Gson();
         String markStr = (String) postMap.get("markList");
         ArrayList<IpcMark> markList = gson.fromJson(markStr, new TypeToken<List<ZKPatentMark>>(){}.getType());
-        String citedmarkStr = (String) postMap.get("citedMarkList");
-        ArrayList<IpcMark> citedMarkList = gson.fromJson(citedmarkStr, new TypeToken<List<ZKPatentMark>>(){}.getType());
+        int patenttype= (int) postMap.get("patenttype");
         String userId = (String) request.getAttribute(Constant.USER_ID);
         boolean flagPatent;
-       // boolean flagCited;
-        flagPatent=patentSearchService.addMark(an,markList);
-
-        // flagCited=patentSearchService.addMark(userId,citedMarkList);
+        flagPatent=patentSearchService.addMark(userId,an,markList,patenttype);
         Map<String ,Object> map=new HashMap<String,Object>();
-       // map.put("flag",flagPatent && flagCited);
         map.put("flag",flagPatent);
         return map;
     }
