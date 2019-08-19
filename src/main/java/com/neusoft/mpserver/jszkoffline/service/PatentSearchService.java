@@ -28,7 +28,7 @@ public interface PatentSearchService {
     public List<ZKPatentMark> searchSortByKeywordFreqsList(String  text);
 
     //保存特征检索式到数据库
-    public boolean addSearchWords(String an,String citedAn,String searchWords,String categoryType,String userId);
+    public boolean addSearchWords(String an,String citedAn,String searchWords,String categoryType,String userId,String searchWords2);
     //从数据库中查询特征检索式
     public wordmark searchWords(String an, String citedAn);
 }

@@ -108,9 +108,10 @@ public class PatentSearchController {
         String citedAn= (String) postMap.get("citedAn");
         String an = (String) postMap.get("an");
         String searchWords = (String)postMap.get("searchWords");
+        String searchWords2 = (String)postMap.get("searchWords2");
         String categoryType = (String)postMap.get("categoryType");
         String userId = (String) request.getAttribute(Constant.USER_ID);
-        boolean flag= patentSearchService.addSearchWords(an, citedAn,searchWords,categoryType,userId);
+        boolean flag= patentSearchService.addSearchWords(an, citedAn,searchWords,categoryType,userId,searchWords2);
         Map<String ,Object> map=new HashMap<String,Object>();
         map.put("flag",flag);
         return map;

@@ -156,12 +156,12 @@ public class PatentSearchServiceImpl implements PatentSearchService {
     }
     //保存特征检索式到数据库中
     @Override
-    public boolean addSearchWords(String an, String citedAn, String searchWords,String categoryType,String userId) {
+    public boolean addSearchWords(String an, String citedAn, String searchWords,String categoryType,String userId,String searchWords2) {
         int flag;
         if(wordMarkRepository.findSearchWords(an,citedAn) != null){
-            flag=wordMarkRepository.updateSearchWords(an,citedAn,searchWords,categoryType,userId);
+            flag=wordMarkRepository.updateSearchWords2(an,citedAn,searchWords,categoryType,userId,searchWords2);
         }else {
-            flag=wordMarkRepository.saveSearchWords(an,citedAn,searchWords,categoryType,userId);
+            flag=wordMarkRepository.saveSearchWords2(an,citedAn,searchWords,categoryType,userId,searchWords2);
         }
         return (flag>0) ? true : false;
     }
