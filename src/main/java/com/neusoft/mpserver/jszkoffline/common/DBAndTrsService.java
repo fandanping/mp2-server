@@ -6,6 +6,7 @@ import com.neusoft.mpserver.common.domain.Pagination;
 import com.neusoft.mpserver.common.domain.Record;
 import com.neusoft.mpserver.common.domain.TrsResult;
 import com.neusoft.mpserver.common.engine.TrsEngine;
+import com.neusoft.mpserver.common.util.ClobToString;
 import com.neusoft.mpserver.common.util.JedisPoolUtil;
 import com.neusoft.mpserver.jszkoffline.dao.PatentRepository;
 import com.neusoft.mpserver.jszkoffline.dao.ZKPatentRepository;
@@ -18,6 +19,10 @@ import org.springframework.stereotype.Service;
 import redis.clients.jedis.JedisCluster;
 import thk.analyzer.ThkAnalyzer;
 import thk.analyzer.Token;
+
+import java.io.IOException;
+import java.sql.Clob;
+import java.sql.SQLException;
 import java.util.*;
 
 @Service
@@ -36,7 +41,7 @@ public class DBAndTrsService {
      * @param pagination
      * @return
      */
-    public Map<String, Object> searchPatentList(Pagination pagination) {
+    public Map<String, Object> searchPatentList(Pagination pagination) throws IOException, SQLException {
         Map<String, Object> resultMap = new HashMap<String, Object>();
         List<Object[]> searchResult = new ArrayList<Object[]>();
         List<Map<String, Object>> patentList = new ArrayList<Map<String, Object>>();
@@ -56,8 +61,8 @@ public class DBAndTrsService {
             temporaryMap.put("an", itemRestlt[0].toString().substring(0, searchResult.get(i)[0].toString().indexOf(".")));
             temporaryMap.put("citedAn", itemRestlt[2] == null ? "" : searchResult.get(i)[2].toString());
             temporaryMap.put("citeType", itemRestlt[3] == null ? "" : searchResult.get(i)[3].toString());
-            temporaryMap.put("apIpc", itemRestlt[1] == null ? "" : searchResult.get(i)[4].toString());
-            temporaryMap.put("cIpc", itemRestlt[4] == null ? "" : searchResult.get(i)[5].toString());
+            temporaryMap.put("apIpc", itemRestlt[1] == null ? "" : ClobToString.ClobToString((Clob)searchResult.get(i)[1]));
+            temporaryMap.put("cIpc", itemRestlt[4] == null ? "" : ClobToString.ClobToString((Clob)searchResult.get(i)[4]));
             temporaryMap.put("apoldAn", itemRestlt[0].toString());
             temporaryMap.put("location", itemRestlt[5] == null ? "" : searchResult.get(i)[5].toString());
             patentList.add(temporaryMap);

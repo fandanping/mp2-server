@@ -4,13 +4,15 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.neusoft.mpserver.common.domain.Pagination;
 import com.neusoft.mpserver.jszkoffline.domain.ZKPatentMark;
+import com.neusoft.mpserver.jszkoffline.domain.wordmark;
 import com.neusoft.mpserver.jszkoffline.service.PatentSearchService;
 import com.neusoft.mpserver.sipo57.domain.Constant;
 import com.neusoft.mpserver.sipo57.domain.IpcMark;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +32,7 @@ public class PatentSearchController {
 
     //查询案卷申请号列表
     @GetMapping("/search/list")
-    public Map<String, Object> searchPatentList( Pagination pagination, String token) {
+    public Map<String, Object> searchPatentList( Pagination pagination, String token) throws IOException, SQLException {
         Map<String, Object> patentMap = patentSearchService.searchPatentList(pagination);
         return patentMap;
     }
@@ -100,6 +102,28 @@ public class PatentSearchController {
         return result;
     }
 
+    //保存特征检索式到数据库中
+    @PostMapping("/searchwords/save")
+    public Map<String, Object> saveSearchwords(@RequestBody Map postMap, HttpServletRequest request) {
+        String citedAn= (String) postMap.get("citedAn");
+        String an = (String) postMap.get("an");
+        String searchWords = (String)postMap.get("searchWords");
+        String categoryType = (String)postMap.get("categoryType");
+        String userId = (String) request.getAttribute(Constant.USER_ID);
+        boolean flag= patentSearchService.addSearchWords(an, citedAn,searchWords,categoryType,userId);
+        Map<String ,Object> map=new HashMap<String,Object>();
+        map.put("flag",flag);
+        return map;
+    }
+
+    //从数据库中查询特征检索式
+    @GetMapping("/searchwords/search/{an}/{citedAn}")
+    public Map<String, wordmark> searchWordMark(@PathVariable String an, @PathVariable String citedAn, HttpServletRequest request) {
+        Map<String,wordmark> result = new HashMap<String,wordmark>();
+        wordmark wordmark = patentSearchService.searchWords(an,citedAn);
+        result.put("SearchWordMark", wordmark);
+        return result;
+    }
 
 
 }

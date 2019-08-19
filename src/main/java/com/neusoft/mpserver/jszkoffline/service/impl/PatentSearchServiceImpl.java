@@ -5,12 +5,17 @@ import com.neusoft.mpserver.common.engine.TrsEngine;
 import com.neusoft.mpserver.common.util.XmlFormatter;
 import com.neusoft.mpserver.jszkoffline.common.DBAndTrsService;
 import com.neusoft.mpserver.jszkoffline.dao.PatentRepository;
+import com.neusoft.mpserver.jszkoffline.dao.WordMarkRepository;
 import com.neusoft.mpserver.jszkoffline.domain.ZKPatentMark;
+import com.neusoft.mpserver.jszkoffline.domain.wordmark;
 import com.neusoft.mpserver.jszkoffline.service.PatentSearchService;
 import com.neusoft.mpserver.sipo57.domain.Constant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import thk.analyzer.ThkAnalyzer;
+
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -24,13 +29,15 @@ public class PatentSearchServiceImpl implements PatentSearchService {
     private PatentRepository patentRepository;
     @Autowired
     private DBAndTrsService dbAndTrsService;
+    @Autowired
+    private WordMarkRepository wordMarkRepository;
     /**
      *1.查询案卷列表：数据库查询：UNI_ABS_PATCIT_CN_NEW
      * @param pagination 分页对象
      * @return 分页对象+案卷列表（本案卷申请号，对比案卷申请号，对比案卷类型,location）
      */
     @Override
-    public Map<String, Object> searchPatentList(Pagination pagination) {
+    public Map<String, Object> searchPatentList(Pagination pagination) throws IOException, SQLException {
        return   dbAndTrsService.searchPatentList(pagination);
     }
 
@@ -146,6 +153,22 @@ public class PatentSearchServiceImpl implements PatentSearchService {
             e.printStackTrace();
         }
         return dbAndTrsService.filterListByTokenName(list);
+    }
+    //保存特征检索式到数据库中
+    @Override
+    public boolean addSearchWords(String an, String citedAn, String searchWords,String categoryType,String userId) {
+        int flag;
+        if(wordMarkRepository.findSearchWords(an,citedAn) != null){
+            flag=wordMarkRepository.updateSearchWords(an,citedAn,searchWords,categoryType,userId);
+        }else {
+            flag=wordMarkRepository.saveSearchWords(an,citedAn,searchWords,categoryType,userId);
+        }
+        return (flag>0) ? true : false;
+    }
+    //从数据库中查询特征检索式
+    @Override
+    public wordmark searchWords(String an, String citedAn) {
+        return wordMarkRepository.findSearchWords(an,citedAn);
     }
 
 

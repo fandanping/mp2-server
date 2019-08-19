@@ -34,6 +34,7 @@ public class WebAppConfigurer implements WebMvcConfigurer {
         urls.add("/ipc/**");
         urls.add("/electrical/**");
         urls.add("/address/**");
+        urls.add("/patent/**");
         urls.add("/user/logout");
         registry.addInterceptor(getTokenInterceptor()).addPathPatterns(urls);
     }

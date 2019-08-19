@@ -1,6 +1,7 @@
 package com.neusoft.mpserver.jszkoffline.dao;
 
 import com.neusoft.mpserver.jszkoffline.domain.Patent;
+import com.neusoft.mpserver.jszkoffline.domain.wordmark;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -35,10 +36,12 @@ public interface PatentRepository extends JpaRepository<Patent,String> {
     public int saveErrorKeyWord(String erroKeyword);
 
     // 2019 06 11x修改
-    @Query(value="select s.an,s.ic,s.cited_an,s.REFERENCE_CATEGORY,s.CITED_IC,'0000' location  from mark_demo_02 s  where s.reference_category='X' and s.ti like '%电视%'", nativeQuery = true)
+    @Query(value="select s.an,s.ic,s.cited_an,s.REFERENCE_CATEGORY,s.CITED_IC,'0000' location  from mark_demo_01 s  where s.reference_category='X' and s.ti like '%电解液%'", nativeQuery = true)
     List<Object[]> findPatentListNew( Pageable pageable);
     //C08L71/12   G01N33/00 H01R4/18 H01T13/39 H01B7/17 G02B21/00
-    @Query(value="select count(1)  from  mark_demo_02 s where s.REFERENCE_CATEGORY='X' and s.ti like '%电视%' order by s.an", nativeQuery = true)
+    @Query(value="select count(1)  from  mark_demo_01 s where s.REFERENCE_CATEGORY='X' and s.ti like '%电解液%' order by s.an", nativeQuery = true)
     int findAnCountNew();
+
+
 
 }
